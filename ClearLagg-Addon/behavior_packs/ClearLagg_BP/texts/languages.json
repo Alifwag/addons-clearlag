@@ -4,8 +4,6 @@
   "clearlagg.message.cleared": "Items cleared: %1",
   "clearlagg.message.warning": "ClearLagg will clear items in %1 seconds!",
   "clearlagg.command.help": "ClearLagg Help - Use !clearlagg help",
-  
-  // Tambahan texts untuk fitur lengkap
   "clearlagg.ui.progress": "ClearLagg Progress",
   "clearlagg.status.clearing": "§c🧹 Sedang membersihkan item...",
   "clearlagg.status.cleared": "§a✅ Berhasil membersihkan §e%1§a entity!",
@@ -15,8 +13,6 @@
   "clearlagg.status.interval_set": "§aInterval clear diubah menjadi §e%1§a detik",
   "clearlagg.error.invalid_interval": "§cError: Interval minimal 30 detik!",
   "clearlagg.error.no_permission": "§cError: Anda tidak memiliki izin!",
-  
-  // Command messages
   "clearlagg.command.clear": "§aManual clear dimulai!",
   "clearlagg.command.interval_usage": "§eUsage: !clearlagg interval <detik>",
   "clearlagg.command.status_title": "§6=== ClearLagg Status ===",
@@ -24,67 +20,43 @@
   "clearlagg.command.status_next": "§fNext Clear: §e%1§f detik",
   "clearlagg.command.status_auto": "§fAuto Clear: %1",
   "clearlagg.command.status_interval": "§fInterval: §b%1§f detik",
-  
-  // Help command messages
   "clearlagg.help.title": "§6=== ClearLagg Commands ===",
   "clearlagg.help.clear": "§a!clearlagg clear §f- Manual clear items",
   "clearlagg.help.interval": "§a!clearlagg interval <detik> §f- Set interval clear",
   "clearlagg.help.status": "§a!clearlagg status §f- Lihat status",
   "clearlagg.help.help": "§a!clearlagg help §f- Tampilkan bantuan",
   "clearlagg.help.credits": "§7Credits: https://github.com/Alifwag/credits-addons-clearlagg.git",
-  
-  // Chat History Feature
   "clearlagg.chat.history_saved": "§7Pesan disimpan dalam history",
   "clearlagg.chat.history_empty": "§7Tidak ada chat history",
   "clearlagg.chat.navigation_info": "§7Gunakan tombol ↑/↓ untuk navigasi history",
-  
-  // Entity names (jika ada entity custom)
   "entity.clearlagg:controller.name": "ClearLagg Controller",
-  
-  // Item names (jika ada item custom)
   "item.clearlagg:debug_tool.name": "ClearLagg Debug Tool",
-  
-  // Achievement/Trophy messages
   "clearlagg.achievement.first_clear": "§6🎉 Achievement: First Cleanup!",
   "clearlagg.achievement.mass_cleaner": "§6🏆 Achievement: Mass Cleaner!",
-  
-  // Configuration messages
   "clearlagg.config.reloaded": "§aKonfigurasi berhasil di-reload",
   "clearlagg.config.saved": "§aKonfigurasi berhasil disimpan",
-  
-  // Error messages
   "clearlagg.error.generic": "§cTerjadi error pada ClearLagg system",
   "clearlagg.error.world_load": "§cError saat load world data",
   "clearlagg.error.script_load": "§cError saat load script",
-  
-  // Debug messages
   "clearlagg.debug.enabled": "§7Debug mode: AKTIF",
   "clearlagg.debug.disabled": "§7Debug mode: NONAKTIF",
   "clearlagg.debug.entity_count": "§7Total entities: %1",
   "clearlagg.debug.performance": "§7Performance: %1ms",
-  
-  // Multi-language support (Indonesian/English)
   "language.name": "English",
   "language.region": "United States",
   "language.code": "en_US",
-  
-  // UI Elements
   "clearlagg.ui.button.clear": "Clear Now",
   "clearlagg.ui.button.settings": "Settings",
   "clearlagg.ui.button.history": "Chat History",
   "clearlagg.ui.title.main": "ClearLagg System",
   "clearlagg.ui.title.settings": "ClearLagg Settings",
   "clearlagg.ui.title.history": "Chat History",
-  
-  // Settings options
   "clearlagg.setting.auto_clear": "Auto Clear",
   "clearlagg.setting.interval": "Clear Interval",
-  "clearlagg.setting.warning_time": "Warning Time", 
+  "clearlagg.setting.warning_time": "Warning Time",
   "clearlagg.setting.max_items": "Max Items Before Clear",
   "clearlagg.setting.progress_bar": "Show Progress Bar",
   "clearlagg.setting.chat_history": "Enable Chat History",
-  
-  // Time units
   "clearlagg.time.seconds": "detik",
   "clearlagg.time.minutes": "menit",
   "clearlagg.time.hours": "jam"
