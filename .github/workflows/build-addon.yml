@@ -17,54 +17,127 @@ jobs:
         with:
           node-version: 18
 
-      - name: Set Minecraft Version (Fixed)
+      - name: Set Minecraft Version
         id: mcversion
         run: |
           VERSION="1.21.124.2"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "MC_VERSION=$VERSION" >> $GITHUB_ENV
 
-      - name: Jalankan Auto Update Manifest
+      - name: Create update script (if missing)
         run: |
-          node scripts/update_manifest.js
+          mkdir -p scripts
+          cat > scripts/update_manifest.js << 'EOF'
+          const fs = require('fs');
+          const path = require('path');
+
+          const VERSION = "1.21.124.2";
+          const BP_MANIFEST = "ClearLagg-Addon/behavior_packs/ClearLagg_BP/manifest.json";
+          const RP_MANIFEST = "ClearLagg-Addon/resource_packs/ClearLagg_RP/manifest.json";
+
+          function updateManifest(filePath) {
+            if (!fs.existsSync(filePath)) {
+              console.log(`❌ File not found: ${filePath}`);
+              return;
+            }
+
+            try {
+              const manifest = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+              
+              // Update version info
+              if (manifest.header) {
+                manifest.header.version = [1, 0, 1];
+                manifest.min_engine_version = [1, 21, 0];
+              }
+              
+              // Update module versions
+              if (manifest.modules) {
+                manifest.modules.forEach(module => {
+                  module.version = [1, 0, 1];
+                });
+              }
+              
+              fs.writeFileSync(filePath, JSON.stringify(manifest, null, 2));
+              console.log(`✅ Updated: ${filePath}`);
+            } catch (error) {
+              console.log(`❌ Error updating ${filePath}:`, error.message);
+            }
+          }
+
+          // Update both manifests
+          updateManifest(BP_MANIFEST);
+          updateManifest(RP_MANIFEST);
+          console.log("🎉 Manifest update completed!");
+          EOF
+
+      - name: Jalankan Auto Update Manifest
+        run: node scripts/update_manifest.js
+
+      - name: Validate JSON files
+        run: |
+          find ClearLagg-Addon -name "*.json" -exec echo "Validating {}" \; -exec python -m json.tool {} > /dev/null \;
 
       - name: ZIP Behavior Pack
         run: |
           cd ClearLagg-Addon/behavior_packs
-          zip -r ClearLagg_BP.zip ClearLagg_BP
+          zip -r ../ClearLagg_BP.zip ClearLagg_BP/
 
       - name: ZIP Resource Pack
         run: |
           cd ClearLagg-Addon/resource_packs
-          zip -r ClearLagg_RP.zip ClearLagg_RP
+          zip -r ../ClearLagg_RP.zip ClearLagg_RP/
 
       - name: Buat file MCADDON
         run: |
-          mkdir addon
-          cp ClearLagg-Addon/behavior_packs/ClearLagg_BP.zip addon/
-          cp ClearLagg-Addon/resource_packs/ClearLagg_RP.zip addon/
-          cd addon
-          zip -r ClearLagg.mcaddon *
+          cd ClearLagg-Addon
+          mkdir -p temp_addon
+          cp ../ClearLagg_BP.zip temp_addon/
+          cp ../ClearLagg_RP.zip temp_addon/
+          cd temp_addon
+          zip -r ../../ClearLagg.mcaddon *
 
-      - name: Buat Release otomatis
+      - name: List files for debugging
+        run: |
+          echo "=== Current Directory Structure ==="
+          find . -name "*.json" -o -name "*.mcaddon" -o -name "*.zip" | head -20
+          echo "=== Created Files ==="
+          ls -la *.mcaddon *.zip 2>/dev/null || echo "No build files found"
+
+      - name: Create Release
         uses: softprops/action-gh-release@v1
+        if: success()
         with:
           tag_name: v${{ steps.mcversion.outputs.version }}
-          name: "ClearLagg Addon (Minecraft ${{ steps.mcversion.outputs.version }})"
+          name: "ClearLagg Addon v1.0.1 (Minecraft ${{ steps.mcversion.outputs.version }})"
           body: |
-            Addon dibuild otomatis ⚡
-            Minecraft Version: ${{ steps.mcversion.outputs.version }}
+            ## 🧹 ClearLagg Addon for Minecraft Bedrock
 
-            Auto update manifest meliputi:
-            - format_version
-            - header.version
-            - modules[].version
-            - dependencies[].version
-            - min_engine_version
+            **Version:** 1.0.1  
+            **Minecraft:** ${{ steps.mcversion.outputs.version }}  
+            **Build Date:** $(date +'%Y-%m-%d %H:%M:%S')
 
+            ### 📦 Included Files:
+            - `ClearLagg.mcaddon` - Complete addon package
+            - `ClearLagg_BP.zip` - Behavior pack only
+            - `ClearLagg_RP.zip` - Resource pack only
+
+            ### 🚀 Features:
+            ✅ Auto item clearing  
+            ✅ Progress bar display  
+            ✅ Chat history system  
+            ✅ Customizable intervals  
+            ✅ Support Minecraft 1.21.124.2
+
+            ### 📥 Installation:
+            1. Download `ClearLagg.mcaddon`
+            2. Double-click to import
+            3. Activate in world settings
+
+            ---
+            *Automatically built with GitHub Actions*
           files: |
-            addon/ClearLagg.mcaddon
-            ClearLagg-Addon/behavior_packs/ClearLagg_BP.zip
-            ClearLagg-Addon/resource_packs/ClearLagg_RP.zip
+            ClearLagg.mcaddon
+            ClearLagg_BP.zip
+            ClearLagg_RP.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
