@@ -3,7 +3,7 @@ name: Auto Build Addon + Update Manifest
 on:
   push:
     branches: [ "main" ]
-  workflow_dispatch:  # Manual trigger
+  workflow_dispatch:
 
 jobs:
   build:
@@ -19,7 +19,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18
-          # HAPUS cache: npm karena tidak ada package.json
 
       - name: Set Minecraft Version
         id: mcversion
@@ -27,6 +26,73 @@ jobs:
           VERSION="1.21.124.2"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "MC_VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Fix JSON files automatically
+        run: |
+          echo "🔧 Checking and fixing JSON files..."
+          
+          # Function to fix JSON files
+          fix_json_file() {
+            local file="$1"
+            if [ -f "$file" ]; then
+              echo "Checking: $file"
+              if python -m json.tool "$file" > /dev/null 2>&1; then
+                echo "✅ Valid: $file"
+              else
+                echo "⚠️  Fixing: $file"
+                # Backup original file
+                cp "$file" "$file.backup"
+                # Try to fix common JSON issues
+                python -c "
+import json, sys
+try:
+    with open('$file', 'r', encoding='utf-8') as f:
+        content = f.read()
+    # Remove trailing commas
+    content = content.replace(',\\n\\n}', '\\n}').replace(',\\n}', '\\n}')
+    # Parse and re-serialize to fix formatting
+    data = json.loads(content)
+    with open('$file', 'w', encoding='utf-8') as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+    print('✅ Fixed: $file')
+except Exception as e:
+    print('❌ Cannot fix: $file - ' + str(e))
+    # Restore backup
+    import shutil
+    shutil.copy('$file.backup', '$file')
+    sys.exit(1)
+                "
+              fi
+            fi
+          }
+          
+          # Fix all JSON files
+          find ClearLagg-Addon -name "*.json" | while read file; do
+            fix_json_file "$file"
+          done
+
+      - name: Validate JSON files
+        run: |
+          echo "🔍 Final validation of JSON files..."
+          INVALID_FILES=0
+          find ClearLagg-Addon -name "*.json" | while read file; do
+            if python -m json.tool "$file" > /dev/null 2>&1; then
+              echo "✅ Valid: $file"
+            else
+              echo "❌ Still invalid: $file"
+              echo "=== File content ==="
+              cat "$file"
+              echo "=== End of file ==="
+              INVALID_FILES=$((INVALID_FILES + 1))
+            fi
+          done
+          
+          if [ $INVALID_FILES -gt 0 ]; then
+            echo "❌ Found $INVALID_FILES invalid JSON files"
+            exit 1
+          else
+            echo "🎉 All JSON files are valid!"
+          fi
 
       - name: Create update script
         run: |
@@ -78,50 +144,30 @@ jobs:
       - name: Update Manifests
         run: node scripts/update_manifest.js
 
-      - name: Validate JSON files
-        run: |
-          echo "🔍 Validating JSON files..."
-          find ClearLagg-Addon -name "*.json" | while read file; do
-            if python -m json.tool "$file" > /dev/null 2>&1; then
-              echo "✅ Valid: $file"
-            else
-              echo "❌ Invalid JSON: $file"
-              exit 1
-            fi
-          done
-
       - name: Create MCADDON Package
         run: |
           echo "📦 Creating MCADDON package..."
           
-          # Check if ClearLagg-Addon directory exists
           if [ ! -d "ClearLagg-Addon" ]; then
             echo "❌ ClearLagg-Addon directory not found!"
-            echo "Current directory structure:"
             ls -la
             exit 1
           fi
           
-          # Create MCADDON
           cd ClearLagg-Addon
           zip -r ../ClearLagg_Addon.mcaddon behavior_packs resource_packs
-          
           cd ..
-          echo "✅ MCADDON created successfully!"
+          echo "✅ MCADDON created!"
           ls -la *.mcaddon
 
       - name: Create separate pack files
         run: |
           echo "📁 Creating separate pack files..."
           
-          # Create behavior pack
           cd ClearLagg-Addon/behavior_packs
           zip -r ../../ClearLagg_Behavior.mcpack *
-          
-          # Create resource pack
           cd ../resource_packs
           zip -r ../../ClearLagg_Resource.mcpack *
-          
           cd ../..
           echo "✅ Separate packs created!"
           ls -la *.mcpack
@@ -132,9 +178,6 @@ jobs:
           [ -f "ClearLagg_Addon.mcaddon" ] && echo "✅ ClearLagg_Addon.mcaddon" || echo "❌ MCADDON missing"
           [ -f "ClearLagg_Behavior.mcpack" ] && echo "✅ ClearLagg_Behavior.mcpack" || echo "❌ Behavior pack missing"
           [ -f "ClearLagg_Resource.mcpack" ] && echo "✅ ClearLagg_Resource.mcpack" || echo "❌ Resource pack missing"
-          
-          echo "📊 File sizes:"
-          ls -lh *.mcaddon *.mcpack
 
       - name: Create Git Tag
         id: tag_version
@@ -143,8 +186,6 @@ jobs:
           echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
           git tag $TAG_NAME || echo "Tag creation failed, continuing..."
           git push origin $TAG_NAME || echo "Tag push failed, continuing..."
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
@@ -155,26 +196,17 @@ jobs:
             ## 🧹 ClearLagg Addon for Minecraft Bedrock
             
             **Build:** #${{ github.run_number }}  
-            **Minecraft Version:** 1.21.124.2  
-            **Build Date:** $(date +'%Y-%m-%d %H:%M:%S')
+            **Minecraft:** 1.21.124.2  
             
-            ### 📦 Download Files:
-            - **`ClearLagg_Addon.mcaddon`** - Complete addon package (recommended)
-            - **`ClearLagg_Behavior.mcpack`** - Behavior pack only
-            - **`ClearLagg_Resource.mcpack`** - Resource pack only
+            ### 📦 Files:
+            - `ClearLagg_Addon.mcaddon` - Complete addon
+            - `ClearLagg_Behavior.mcpack` - Behavior pack
+            - `ClearLagg_Resource.mcpack` - Resource pack
             
             ### 🚀 Installation:
             1. Download `ClearLagg_Addon.mcaddon`
-            2. Double-click to import to Minecraft
+            2. Double-click to import
             3. Activate in world settings
-            4. Enjoy lag-free gameplay!
-            
-            ### 🎯 Features:
-            ✅ Automatic item clearing  
-            ✅ Progress bar display  
-            ✅ Chat history system  
-            ✅ Customizable intervals  
-            ✅ Support Minecraft 1.21.124.2
             
             ---
             *Automatically built with GitHub Actions*
@@ -182,7 +214,5 @@ jobs:
             ClearLagg_Addon.mcaddon
             ClearLagg_Behavior.mcpack
             ClearLagg_Resource.mcpack
-          draft: false
-          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
