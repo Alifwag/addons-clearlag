@@ -1,0 +1,70 @@
+name: Auto Build Addon + Update Manifest
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Install Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Set Minecraft Version (Fixed)
+        id: mcversion
+        run: |
+          VERSION="1.21.124.2"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "MC_VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Jalankan Auto Update Manifest
+        run: |
+          node scripts/update_manifest.js
+
+      - name: ZIP Behavior Pack
+        run: |
+          cd ClearLagg-Addon/behavior_packs
+          zip -r ClearLagg_BP.zip ClearLagg_BP
+
+      - name: ZIP Resource Pack
+        run: |
+          cd ClearLagg-Addon/resource_packs
+          zip -r ClearLagg_RP.zip ClearLagg_RP
+
+      - name: Buat file MCADDON
+        run: |
+          mkdir addon
+          cp ClearLagg-Addon/behavior_packs/ClearLagg_BP.zip addon/
+          cp ClearLagg-Addon/resource_packs/ClearLagg_RP.zip addon/
+          cd addon
+          zip -r ClearLagg.mcaddon *
+
+      - name: Buat Release otomatis
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.mcversion.outputs.version }}
+          name: "ClearLagg Addon (Minecraft ${{ steps.mcversion.outputs.version }})"
+          body: |
+            Addon dibuild otomatis ⚡
+            Minecraft Version: ${{ steps.mcversion.outputs.version }}
+
+            Auto update manifest meliputi:
+            - format_version
+            - header.version
+            - modules[].version
+            - dependencies[].version
+            - min_engine_version
+
+          files: |
+            addon/ClearLagg.mcaddon
+            ClearLagg-Addon/behavior_packs/ClearLagg_BP.zip
+            ClearLagg-Addon/resource_packs/ClearLagg_RP.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
