@@ -24,120 +24,134 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "MC_VERSION=$VERSION" >> $GITHUB_ENV
 
-      - name: Create update script (if missing)
+      - name: Create update script
         run: |
           mkdir -p scripts
           cat > scripts/update_manifest.js << 'EOF'
-          const fs = require('fs');
-          const path = require('path');
+          const fs = require("fs");
+          const path = require("path");
 
-          const VERSION = "1.21.124.2";
-          const BP_MANIFEST = "ClearLagg-Addon/behavior_packs/ClearLagg_BP/manifest.json";
-          const RP_MANIFEST = "ClearLagg-Addon/resource_packs/ClearLagg_RP/manifest.json";
+          console.log("🔧 Starting manifest update...");
 
-          function updateManifest(filePath) {
+          const manifests = [
+            "ClearLagg-Addon/behavior_packs/ClearLagg_BP/manifest.json",
+            "ClearLagg-Addon/resource_packs/ClearLagg_RP/manifest.json"
+          ];
+
+          manifests.forEach(filePath => {
             if (!fs.existsSync(filePath)) {
-              console.log(`❌ File not found: ${filePath}`);
+              console.log("❌ File not found:", filePath);
               return;
             }
 
             try {
-              const manifest = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-              
-              // Update version info
-              if (manifest.header) {
-                manifest.header.version = [1, 0, 1];
-                manifest.min_engine_version = [1, 21, 0];
-              }
-              
-              // Update module versions
-              if (manifest.modules) {
-                manifest.modules.forEach(module => {
-                  module.version = [1, 0, 1];
-                });
-              }
-              
-              fs.writeFileSync(filePath, JSON.stringify(manifest, null, 2));
-              console.log(`✅ Updated: ${filePath}`);
-            } catch (error) {
-              console.log(`❌ Error updating ${filePath}:`, error.message);
-            }
-          }
+              const data = JSON.parse(fs.readFileSync(filePath, "utf8"));
+              console.log("📝 Updating:", filePath);
 
-          // Update both manifests
-          updateManifest(BP_MANIFEST);
-          updateManifest(RP_MANIFEST);
+              // Update version
+              if (data.header && data.header.version) {
+                const v = data.header.version;
+                data.header.version = [v[0] || 1, v[1] || 0, (v[2] || 0) + 1];
+                console.log("   ✅ Version:", data.header.version);
+              }
+
+              // Update min engine version
+              if (data.header) {
+                data.header.min_engine_version = [1, 21, 0];
+                console.log("   ✅ Min engine version:", data.header.min_engine_version);
+              }
+
+              fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+              console.log("💾 Saved:", filePath);
+
+            } catch (error) {
+              console.log("❌ Error:", filePath, error.message);
+            }
+          });
+
           console.log("🎉 Manifest update completed!");
           EOF
 
-      - name: Jalankan Auto Update Manifest
+      - name: Update Manifests
         run: node scripts/update_manifest.js
 
-      - name: Validate JSON files
+      - name: Validate JSON
         run: |
           find ClearLagg-Addon -name "*.json" -exec echo "Validating {}" \; -exec python -m json.tool {} > /dev/null \;
 
-      - name: ZIP Behavior Pack
+      - name: Create MCADDON Package
         run: |
-          cd ClearLagg-Addon/behavior_packs
-          zip -r ../ClearLagg_BP.zip ClearLagg_BP/
-
-      - name: ZIP Resource Pack
-        run: |
-          cd ClearLagg-Addon/resource_packs
-          zip -r ../ClearLagg_RP.zip ClearLagg_RP/
-
-      - name: Buat file MCADDON
-        run: |
+          echo "📦 Packaging MCADDON..."
+          
+          # Method 1: Simple direct approach
           cd ClearLagg-Addon
-          mkdir -p temp_addon
-          cp ../ClearLagg_BP.zip temp_addon/
-          cp ../ClearLagg_RP.zip temp_addon/
-          cd temp_addon
-          zip -r ../../ClearLagg.mcaddon *
+          zip -r ../ClearLagg_Addon.mcaddon behavior_packs resource_packs
+          
+          # Method 2: Verify structure
+          echo "=== Package Structure ==="
+          find behavior_packs -type f | head -10
+          find resource_packs -type f | head -10
+          
+          cd ..
+          echo "✅ Package created!"
+          ls -la *.mcaddon
 
-      - name: List files for debugging
+      - name: Create Separate ZIPs
         run: |
-          echo "=== Current Directory Structure ==="
-          find . -name "*.json" -o -name "*.mcaddon" -o -name "*.zip" | head -20
-          echo "=== Created Files ==="
-          ls -la *.mcaddon *.zip 2>/dev/null || echo "No build files found"
+          echo "📁 Creating separate ZIP files..."
+          
+          # Behavior Pack ZIP
+          cd ClearLagg-Addon/behavior_packs
+          zip -r ../../ClearLagg_BP.zip ClearLagg_BP
+          
+          # Resource Pack ZIP  
+          cd ../resource_packs
+          zip -r ../../ClearLagg_RP.zip ClearLagg_RP
+          
+          cd ../..
+          echo "✅ Separate ZIPs created"
+          ls -la *.zip
+
+      - name: Verify Artifacts
+        run: |
+          echo "🔍 Verifying build artifacts..."
+          [ -f "ClearLagg_Addon.mcaddon" ] && echo "✅ MCADDON found" || echo "❌ MCADDON missing"
+          [ -f "ClearLagg_BP.zip" ] && echo "✅ BP ZIP found" || echo "❌ BP ZIP missing"
+          [ -f "ClearLagg_RP.zip" ] && echo "✅ RP ZIP found" || echo "❌ RP ZIP missing"
+          
+          echo "=== File sizes ==="
+          ls -lh *.mcaddon *.zip 2>/dev/null || echo "No build files"
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
-        if: success()
         with:
-          tag_name: v${{ steps.mcversion.outputs.version }}
-          name: "ClearLagg Addon v1.0.1 (Minecraft ${{ steps.mcversion.outputs.version }})"
+          tag_name: v1.0.${{ github.run_number }}
+          name: "ClearLagg Addon v1.0.${{ github.run_number }}"
           body: |
             ## 🧹 ClearLagg Addon for Minecraft Bedrock
-
-            **Version:** 1.0.1  
-            **Minecraft:** ${{ steps.mcversion.outputs.version }}  
-            **Build Date:** $(date +'%Y-%m-%d %H:%M:%S')
-
-            ### 📦 Included Files:
-            - `ClearLagg.mcaddon` - Complete addon package
+            
+            **Build:** #${{ github.run_number }}  
+            **Minecraft:** 1.21.124.2  
+            **Date:** $(date +'%Y-%m-%d %H:%M:%S')
+            
+            ### 📦 Files:
+            - `ClearLagg_Addon.mcaddon` - Complete addon (recommended)
             - `ClearLagg_BP.zip` - Behavior pack only
             - `ClearLagg_RP.zip` - Resource pack only
-
-            ### 🚀 Features:
-            ✅ Auto item clearing  
-            ✅ Progress bar display  
-            ✅ Chat history system  
-            ✅ Customizable intervals  
-            ✅ Support Minecraft 1.21.124.2
-
-            ### 📥 Installation:
-            1. Download `ClearLagg.mcaddon`
-            2. Double-click to import
+            
+            ### 🚀 Installation:
+            1. Download `ClearLagg_Addon.mcaddon`
+            2. Double-click to import to Minecraft
             3. Activate in world settings
-
+            4. Enjoy lag-free gameplay!
+            
             ---
             *Automatically built with GitHub Actions*
           files: |
-            ClearLagg.mcaddon
+            ClearLagg_Addon.mcaddon
             ClearLagg_BP.zip
             ClearLagg_RP.zip
+          draft: false
+          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
