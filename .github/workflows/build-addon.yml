@@ -3,19 +3,31 @@ name: Auto Build Addon + Update Manifest
 on:
   push:
     branches: [ "main" ]
+  workflow_dispatch:  # Manual trigger
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # ← PERMISSION YANG DITAMBAHKAN
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup Git
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
 
       - name: Install Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 18
+          cache: 'npm'
 
       - name: Set Minecraft Version
         id: mcversion
@@ -29,7 +41,6 @@ jobs:
           mkdir -p scripts
           cat > scripts/update_manifest.js << 'EOF'
           const fs = require("fs");
-          const path = require("path");
 
           console.log("🔧 Starting manifest update...");
 
@@ -77,23 +88,21 @@ jobs:
 
       - name: Validate JSON
         run: |
-          find ClearLagg-Addon -name "*.json" -exec echo "Validating {}" \; -exec python -m json.tool {} > /dev/null \;
+          find ClearLagg-Addon -name "*.json" | while read file; do
+            echo "Validating $file"
+            python -m json.tool "$file" > /dev/null || echo "❌ Invalid JSON: $file"
+          done
 
       - name: Create MCADDON Package
         run: |
           echo "📦 Packaging MCADDON..."
           
-          # Method 1: Simple direct approach
+          # Create MCADDON
           cd ClearLagg-Addon
           zip -r ../ClearLagg_Addon.mcaddon behavior_packs resource_packs
           
-          # Method 2: Verify structure
-          echo "=== Package Structure ==="
-          find behavior_packs -type f | head -10
-          find resource_packs -type f | head -10
-          
           cd ..
-          echo "✅ Package created!"
+          echo "✅ MCADDON created!"
           ls -la *.mcaddon
 
       - name: Create Separate ZIPs
@@ -120,13 +129,23 @@ jobs:
           [ -f "ClearLagg_RP.zip" ] && echo "✅ RP ZIP found" || echo "❌ RP ZIP missing"
           
           echo "=== File sizes ==="
-          ls -lh *.mcaddon *.zip 2>/dev/null || echo "No build files"
+          ls -lh *.mcaddon *.zip
+
+      - name: Create Git Tag
+        id: tag_version
+        run: |
+          TAG_NAME="v1.0.${{ github.run_number }}"
+          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+          git tag $TAG_NAME
+          git push origin $TAG_NAME
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: v1.0.${{ github.run_number }}
-          name: "ClearLagg Addon v1.0.${{ github.run_number }}"
+          tag_name: ${{ steps.tag_version.outputs.tag_name }}
+          name: "ClearLagg Addon ${{ steps.tag_version.outputs.tag_name }}"
           body: |
             ## 🧹 ClearLagg Addon for Minecraft Bedrock
             
@@ -153,5 +172,3 @@ jobs:
             ClearLagg_RP.zip
           draft: false
           prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
