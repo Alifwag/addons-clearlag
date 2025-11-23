@@ -4,7 +4,7 @@
 
 <img src="https://img.shields.io/badge/Minecraft-Bedrock_Editon-00AA00?style=for-the-badge&logo=minecraft"/>
 <img src="https://img.shields.io/badge/Version-1.0.0-blue?style=for-the-badge">
-<img src="https://img.shields.io/badge/Support-1.21%.124%.2--%20Latest-green?style=for-the-badge">
+<img src="https://img.shields.io/badge/Support-1.21%124%--%2Latest-green?style=for-the-badge">
 <ing src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge">
 
 Automatically clear lag-causing items with beautiful progress bars and chat history features!
