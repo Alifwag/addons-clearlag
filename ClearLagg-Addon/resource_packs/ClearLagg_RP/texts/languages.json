@@ -1,0 +1,7 @@
+{
+  "clearlagg.title.progress": "ClearLagg Progress",
+  "clearlagg.message.clearing": "Clearing items...",
+  "clearlagg.message.cleared": "Items cleared: %1",
+  "clearlagg.message.warning": "ClearLagg will clear items in %1 seconds!",
+  "clearlagg.command.help": "ClearLagg Help - Use !clearlagg help"
+}
