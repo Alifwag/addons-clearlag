@@ -1,4 +1,3 @@
-```markdown
 # 🧹 ClearLagg Addon for Minecraft Bedrock Edition
 
 <div align="center">
