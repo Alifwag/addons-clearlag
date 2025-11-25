@@ -1,18 +1,9 @@
 # 🧹 ClearLagg Addon for Minecraft Bedrock Edition
 
-<div align="center">
-
-<!-- ON/OFF Switch -->
-<div align="center">
-
-### 🔘 DOWNLOAD STATUS
-![Download Status](https://img.shields.io/badge/STATUS-ONLINE-brightgreen?style=for-the-badge&label=DOWNLOAD&labelColor=black&color=00ff00) 
-*Last Updated: $(date)*
-
-</div>
 
 <!-- Welcome GIF -->
-<img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExb2R0c3V6b2J4d2U1ZzB6eG4xY3B0dGxqZzZ1bnRiaGQ2eHpkcWZ6biZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0MYt5jPR6QX5pnqM/giphy.gif" width="600" height="300" alt="Welcome to ClearLagg">
+<img src="![17640707890351527704669125780127](https://github.com/user-attachments/assets/6d68f44c-d734-4374-97bc-40f5f126014e)
+" width="600" height="300" alt="Welcome to ClearLagg">
 
 <img src="https://img.shields.io/badge/Minecraft-Bedrock_Editon-00AA00?style=for-the-badge&logo=minecraft"/>
 <img src="https://img.shields.io/badge/Version-1.0.0-blue?style=for-the-badge">
