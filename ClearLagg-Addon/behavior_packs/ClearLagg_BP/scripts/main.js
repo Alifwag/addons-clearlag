@@ -11,11 +11,14 @@ class ClearLaggSystem {
         this.chatHistory = [];
         this.currentHistoryIndex = -1;
         this.currentChatInput = "";
-        
-        // Configurable settings
+
+        // Lokasi kematian pemain
+        this.lastDeathLocation = new Map();
+
+        // Config
         this.config = {
-            clearInterval: 300, // 5 minutes in seconds
-            warningTime: 30, // 30 seconds warning
+            clearInterval: 300,
+            warningTime: 30,
             maxItems: 500,
             enableAutoClear: true,
             enableProgressBar: true,
@@ -26,22 +29,25 @@ class ClearLaggSystem {
     }
     
     initialize() {
-        // Start automatic clearing
+
         if (this.config.enableAutoClear) {
             this.startAutoClear();
         }
-        
-        // Register chat send event for history
+
         if (this.config.enableChatHistory) {
-            world.beforeEvents.chatSend.subscribe((event) => {
-                this.handleChatSend(event);
-            });
+            world.beforeEvents.chatSend.subscribe((event) => this.handleChatSend(event));
         }
-        
-        // Register system run to handle progress updates
-        system.runInterval(() => {
-            this.updateProgress();
-        }, 20); // Update every second
+
+        // Listener pemain mati
+        world.afterEvents.entityDie.subscribe(ev => {
+            if (ev.deadEntity instanceof Player) {
+                const pl = ev.deadEntity;
+                this.lastDeathLocation.set(pl.name, pl.location);
+                pl.sendMessage("§c☠ Kamu mati! Gunakan §e!back §cuntuk kembali ke lokasi kematian.");
+            }
+        });
+
+        system.runInterval(() => this.updateProgress(), 20);
     }
     
     startAutoClear() {
@@ -50,21 +56,18 @@ class ClearLaggSystem {
         this.interval = system.runInterval(() => {
             countdown--;
             
-            // Send warning
             if (countdown === this.config.warningTime) {
                 this.broadcastMessage("§6⚠ ClearLagg akan membersihkan item dalam §e" + countdown + " detik!");
             }
             
-            // Clear items
             if (countdown <= 0) {
                 this.clearItems();
                 countdown = this.config.clearInterval;
             }
             
-            // Update progress bar for nearby players
             this.updateClearProgress(countdown);
             
-        }, 20); // Run every second
+        }, 20);
     }
     
     updateClearProgress(countdown) {
@@ -84,18 +87,12 @@ class ClearLaggSystem {
         const progressBar = "§2" + "◼".repeat(filledBars) + "§8" + "◼".repeat(emptyBars);
         const title = `§l§aClearLagg §r| ${progressBar} §f${percent}%`;
         
-        // Show to all players
-        const players = world.getPlayers();
-        for (const player of players) {
+        for (const player of world.getPlayers()) {
             try {
                 player.onScreenDisplay.setTitle(title, {
-                    stayDuration: 20,
-                    fadeInDuration: 0,
-                    fadeOutDuration: 0
+                    stayDuration: 20
                 });
-            } catch (error) {
-                // Ignore errors for players that might have left
-            }
+            } catch {}
         }
     }
     
@@ -107,24 +104,17 @@ class ClearLaggSystem {
         const entities = dimension.getEntities();
         let clearedCount = 0;
         
+        const projectileTypes = [
+            "minecraft:arrow",
+            "minecraft:snowball",
+            "minecraft:egg",
+            "minecraft:ender_pearl",
+            "minecraft:splash_potion",
+            "minecraft:experience_bottle"
+        ];
+        
         for (const entity of entities) {
-            // Clear items (item entities)
-            if (entity.typeId === "minecraft:item") {
-                entity.kill();
-                clearedCount++;
-            }
-            
-            // Clear arrows, snowballs, etc.
-            const projectileTypes = [
-                "minecraft:arrow",
-                "minecraft:snowball", 
-                "minecraft:egg",
-                "minecraft:ender_pearl",
-                "minecraft:splash_potion",
-                "minecraft:experience_bottle"
-            ];
-            
-            if (projectileTypes.includes(entity.typeId)) {
+            if (entity.typeId === "minecraft:item" || projectileTypes.includes(entity.typeId)) {
                 entity.kill();
                 clearedCount++;
             }
@@ -136,29 +126,23 @@ class ClearLaggSystem {
     }
     
     broadcastMessage(message) {
-        const players = world.getPlayers();
-        for (const player of players) {
+        for (const player of world.getPlayers()) {
             player.sendMessage(message);
         }
-        console.log(message);
     }
     
-    // Chat History System with Undo/Redo
     handleChatSend(event) {
         const player = event.sender;
         const message = event.message;
-        
-        // Save current input before sending
+
         this.currentChatInput = message;
         
-        // Add to history
         this.chatHistory.push({
             player: player.name,
             message: message,
             timestamp: Date.now()
         });
         
-        // Keep only last 50 messages
         if (this.chatHistory.length > 50) {
             this.chatHistory.shift();
         }
@@ -170,25 +154,19 @@ class ClearLaggSystem {
         return this.chatHistory.filter(entry => entry.player === playerName);
     }
     
-    // Manual clear command
     manualClear() {
         this.clearItems();
     }
     
-    // Set clear interval
     setClearInterval(seconds) {
         this.config.clearInterval = seconds;
-        
-        // Restart auto clear
-        if (this.interval) {
-            system.clearRun(this.interval);
-        }
+
+        if (this.interval) system.clearRun(this.interval);
         this.startAutoClear();
         
         return `§aClear interval diubah menjadi §e${seconds}§a detik`;
     }
     
-    // Get status
     getStatus() {
         const nextClear = this.config.clearInterval - (this.progress * this.config.clearInterval / 100);
         return {
@@ -200,14 +178,17 @@ class ClearLaggSystem {
     }
 }
 
-// Initialize the system
 const clearLagg = new ClearLaggSystem();
 
-// Command registration
+
+// ==================== SEMUA COMMAND BARU DI SINI ====================
+
 world.beforeEvents.chatSend.subscribe((event) => {
+
     const message = event.message.toLowerCase();
     const player = event.sender;
-    
+
+    // ---- Perintah ClearLagg Lama ----
     if (message.startsWith("!clearlagg")) {
         event.cancel = true;
         
@@ -224,8 +205,7 @@ world.beforeEvents.chatSend.subscribe((event) => {
                 if (args[2] && !isNaN(args[2])) {
                     const seconds = parseInt(args[2]);
                     if (seconds >= 30) {
-                        const result = clearLagg.setClearInterval(seconds);
-                        player.sendMessage(result);
+                        player.sendMessage(clearLagg.setClearInterval(seconds));
                     } else {
                         player.sendMessage("§cInterval minimal 30 detik!");
                     }
@@ -239,26 +219,150 @@ world.beforeEvents.chatSend.subscribe((event) => {
                 player.sendMessage([
                     "§6=== ClearLagg Status ===",
                     `§fProgress: §a${status.progress}%`,
-                    `§fNext Clear: §e${status.nextClear}§f detik`,
+                    `§fNext Clear: §e${status.nextClear} detik`,
                     `§fAuto Clear: §${status.config.enableAutoClear ? "aAktif" : "cNonaktif"}`,
-                    `§fInterval: §b${status.config.clearInterval}§f detik`
+                    `§fInterval: §b${status.config.clearInterval} detik`
                 ].join("\n"));
                 break;
                 
-            case "help":
             default:
                 player.sendMessage([
                     "§6=== ClearLagg Commands ===",
-                    "§a!clearlagg clear §f- Manual clear items",
-                    "§a!clearlagg interval <detik> §f- Set interval clear",
-                    "§a!clearlagg status §f- Lihat status",
-                    "§a!clearlagg help §f- Tampilkan bantuan",
-                    "§7Credits: https://github.com/Alifwag/credits-addons-clearlagg.git"
+                    "§a!clearlagg clear",
+                    "§a!clearlagg interval <detik>",
+                    "§a!clearlagg status",
+                    "§a!clearlagg help"
                 ].join("\n"));
-                break;
         }
+        return;
+    }
+
+    // ---- PERINTAH TAMBAHAN ----
+    switch(message) {
+
+        case "!hi":
+            event.cancel = true;
+            player.sendMessage("§aHai juga! 👋");
+            break;
+
+        case "!list":
+            event.cancel = true;
+            player.sendMessage([
+                "§6=== Commands ===",
+                "§a!hi",
+                "§a!test",
+                "§a!back",
+                "§a!rtp",
+                "§a!reload",
+                "§a!ping",
+                "§a!pos",
+                "§a!heal",
+                "§a!food",
+                "§a!time",
+                "§a!day",
+                "§a!night",
+                "§a!fly",
+                "§a!unfly",
+                "§a!help"
+            ].join("\n"));
+            break;
+
+        case "!reload":
+            event.cancel = true;
+            player.sendMessage("§e🔄 Reloading addon...");
+            system.runTimeout(() => {
+                player.sendMessage("§aAddon berhasil di-reload (simulasi).");
+            }, 20);
+            break;
+
+        case "!test":
+            event.cancel = true;
+            const s = clearLagg.getStatus();
+            player.sendMessage([
+                "§6=== Diagnostics ===",
+                `§fAuto Clear: ${s.config.enableAutoClear}`,
+                `§fProgress: ${s.progress}%`,
+                `§fNext Clear: ${s.nextClear}s`,
+                "§fStatus: OK"
+            ].join("\n"));
+            break;
+
+        case "!back":
+            event.cancel = true;
+            if (!clearLagg.lastDeathLocation.has(player.name)) {
+                player.sendMessage("§c❌ Kamu belum mati.");
+            } else {
+                const loc = clearLagg.lastDeathLocation.get(player.name);
+                player.sendMessage("§a⏩ Teleport ke lokasi kematian...");
+                player.teleport(loc);
+            }
+            break;
+
+        case "!rtp":
+            event.cancel = true;
+            const x = Math.floor(Math.random() * 2000 - 1000);
+            const z = Math.floor(Math.random() * 2000 - 1000);
+            const y = 100;
+            player.sendMessage("§a🎲 Random teleport...");
+            player.teleport({ x, y, z });
+            break;
+
+        case "!ping":
+            event.cancel = true;
+            player.sendMessage("§aPong!");
+            break;
+
+        case "!pos":
+            event.cancel = true;
+            player.sendMessage(`§aPosisi: §e${player.location.x.toFixed(1)}, ${player.location.y.toFixed(1)}, ${player.location.z.toFixed(1)}`);
+            break;
+
+        case "!heal":
+            event.cancel = true;
+            player.sendMessage("§a❤️ Kamu disembuhkan!");
+            player.runCommandAsync("effect @s regeneration 2 5");
+            break;
+
+        case "!food":
+            event.cancel = true;
+            player.sendMessage("§a🍗 Food full!");
+            player.runCommandAsync("effect @s saturation 1 10");
+            break;
+
+        case "!time":
+            event.cancel = true;
+            player.sendMessage("§a⌚ Waktu dunia: §e" + world.getTime());
+            break;
+
+        case "!day":
+            event.cancel = true;
+            world.getDimension("overworld").runCommandAsync("time set day");
+            player.sendMessage("§e☀ Day!");
+            break;
+
+        case "!night":
+            event.cancel = true;
+            world.getDimension("overworld").runCommandAsync("time set night");
+            player.sendMessage("§9🌙 Night!");
+            break;
+
+        case "!fly":
+            event.cancel = true;
+            player.runCommandAsync("ability @s mayfly true");
+            player.sendMessage("§a✈ Fly enabled!");
+            break;
+
+        case "!unfly":
+            event.cancel = true;
+            player.runCommandAsync("ability @s mayfly false");
+            player.sendMessage("§c✈ Fly disabled!");
+            break;
+
+        case "!help":
+            event.cancel = true;
+            player.sendMessage("§aGunakan !list untuk melihat semua command.");
+            break;
     }
 });
 
-// Export for external use
 export default clearLagg;
