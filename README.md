@@ -2,8 +2,7 @@
 
 
 <!-- Welcome GIF -->
-<img src="![17640707890351527704669125780127](https://github.com/user-attachments/assets/6d68f44c-d734-4374-97bc-40f5f126014e)
-" width="600" height="300" alt="Welcome to ClearLagg">
+<img src="https://giphy.com/gifs/smile-youre-welcome-emojis-3oEduXRxrIAvrBFDVK" width="600" height="300" alt="Welcome to ClearLagg">
 
 <img src="https://img.shields.io/badge/Minecraft-Bedrock_Editon-00AA00?style=for-the-badge&logo=minecraft"/>
 <img src="https://img.shields.io/badge/Version-1.0.0-blue?style=for-the-badge">
