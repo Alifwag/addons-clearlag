@@ -1,23 +1,17 @@
 {
   "format_version": 2,
   "header": {
-    "name": "SuperAI Resource Pack",
-    "description": "Advanced AI textures and models",
-    "uuid": "d4e5f6g7-h8i9-0123-defg-456789012345",
+    "description": "ClearLagg Resource Pack",
+    "name": "ClearLagg RP",
+    "uuid": "c5455a4e-7a18-4c23-b82c-c4d5daac1f6a",
     "version": [1, 0, 0],
-    "min_engine_version": [1, 16, 0]
+    "min_engine_version": [1, 19, 0]
   },
   "modules": [
     {
+      "description": "Resource Module",
       "type": "resources",
-      "uuid": "e5f6g7h8-i9j0-1234-efgh-567890123456",
-      "version": [1, 0, 0],
-      "description": "AI Textures and Models"
-    }
-  ],
-  "dependencies": [
-    {
-      "uuid": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "uuid": "5df23452-96c9-4209-b699-a955c22bc738",
       "version": [1, 0, 0]
     }
   ]
