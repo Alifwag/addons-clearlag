@@ -26,11 +26,11 @@
 ---
 
 ## 📂 Struktur Add-on
-
+```
 ClearLagg_BP/        ← Behavior Pack utama ├ manifest.json ├ pack_icon.png     ← ikon pack (opsional, 64×64) └ scripts/ └ main.js       ← script utama addon
 
 ClearLagg_RP/        ← Resource Pack (opsional) └ manifest.json
-
+```
 > Jika hanya menggunakan behavior pack — cukup folder `ClearLagg_BP/`.
 
 ---
@@ -103,7 +103,7 @@ v1.0.0	Rilis pertama — auto-clear, manual clear, progress bar, commands dasar
 
 Jika menemukan bug, error, atau punya saran:
 
-
+[![Discord](https://img.shields.io/badge/Discord-Join_Community-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/xxxxxxx)
 
 Klik tombol di atas untuk masuk ke server Discord admin / support. Silakan jelaskan:
 
