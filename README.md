@@ -103,7 +103,8 @@ v1.0.0	Rilis pertama — auto-clear, manual clear, progress bar, commands dasar
 
 Jika menemukan bug, error, atau punya saran:
 
-[![Discord](https://raw.githubusercontent.com/Alifwag/addons-clearlag/main/.assets/discord_glow.gif)](https://discord.gg/xxxxxxx)
+[![Discord](https://img.shields.io/badge/Discord-Join_Community-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/xxxxxxx)
+![Sparkle](https://raw.githubusercontent.com/Alifwag/addons-clearlag/main/.assets/sparkle.gif)
 
 Klik tombol di atas untuk masuk ke server Discord admin / support. Silakan jelaskan:
 
