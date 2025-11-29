@@ -63,9 +63,9 @@
 ---
 
 ## 📂 Struktur File (standar)
-```
+
 / (repo root) ├─ README.md ├─ LICENSE ├─ ClearLagg_BP/ │  ├─ manifest.json │  ├─ pack_icon.png │  └─ scripts/ │     └─ main.js └─ ClearLagg_RP/    (opsional) └─ manifest.json
-```
+
 ---
 
 ## 🚀 Instalasi (langkah demi langkah)
@@ -154,7 +154,7 @@ Jika menemukan bug / saranan, laporkan/kasih saran apalagi penambahan di addon d
 
 
 Gunakan template ini saat melapor (copy-paste ke Discord):
-
+```
 [Bug Report] ClearLagg
 - Minecraft Platform: (Android / Windows 10 / iOS / Console)
 - Minecraft Version: (contoh: 1.20.10)
@@ -167,7 +167,7 @@ Gunakan template ini saat melapor (copy-paste ke Discord):
 - Actual result / error logs:
 - Screenshot / video: (attach)
 - main.js (if modified): paste or attach snippet
-
+```
 > Setelah di-submit kami akan merespon di channel support dan membuat issue tracker bila perlu.
 
 
