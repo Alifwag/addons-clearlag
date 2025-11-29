@@ -142,13 +142,13 @@ Tanpa perlu izin, attribution, atau royalti. Gunakan dengan risiko sendiri; penu
 ---
 
 📦 Struktur Repo & File
-
+```
 /  ← root
   ├ README.md        ← file dokumentasi ini
   ├ LICENSE          ← lisensi
   ├ ClearLagg_BP/    ← behavior pack
   └ (opsional) ClearLagg_RP/ ← resource pack
-
+```
 
 ---
 
