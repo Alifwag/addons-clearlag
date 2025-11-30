@@ -1,397 +1,233 @@
-name: 🧹 ClearLag Addon - Auto Build & Release
+name: 🚀 Auto Build ClearLagg Addon & Update Manifest
+
+# ----------------------------------------------------------------------
+# 📢 Penjelasan Workflow
+# ----------------------------------------------------------------------
+# Workflow ini dirancang untuk:
+# 1. Mengotomatiskan proses build (kompresi .mcaddon dan .zip).
+# 2. Secara otomatis meningkatkan versi (patch number) dalam manifest.json 
+#    setiap kali ada push ke branch 'main'.
+# 3. Membuat Release baru di GitHub dengan file-file yang sudah dibuild.
+# ----------------------------------------------------------------------
 
 on:
+  # 🎯 Pemicu (Trigger)
   push:
     branches: [ "main" ]
+  # 🛠️ Memungkinkan eksekusi manual (Opsional: Hapus jika tidak perlu)
   workflow_dispatch:
-    inputs:
-      version_bump:
-        description: 'Type of version bump'
-        required: true
-        default: 'patch'
-        type: choice
-        options:
-        - patch
-        - minor
-        - major
-
-env:
-  ADDON_NAME: "ClearLagg"
-  MC_VERSION: "1.21.124.2"
-  NODE_VERSION: "18"
 
 jobs:
-  welcome:
-    name: "🎉 Welcome & Setup"
+  build_and_release:
     runs-on: ubuntu-latest
-    outputs:
-      timestamp: ${{ steps.timestamp.outputs.time }}
-      run_id: ${{ github.run_number }}
+    # ⚙️ Menentukan shell untuk eksekusi yang lebih seragam
+    defaults:
+      run:
+        shell: bash
+
     steps:
-      - name: Display Welcome ASCII Art
+      # ----------------------------------------------------------------------
+      # 💡 Sambutan dan Inisialisasi
+      # ----------------------------------------------------------------------
+      - name: 👋 Welcome to ClearLagg Build Pipeline!
         run: |
-          echo "
-          ╔═══════════════════════════════════════════════╗
-          ║              🧹 CLEARLAG ADDON               ║
-          ║           Minecraft Bedrock Edition          ║
-          ║                                               ║
-          ║    🚀 Auto Build System - GitHub Actions     ║
-          ║    📦 MCADDON Generator + Release Manager    ║
-          ║    🎯 Version: ${{ env.MC_VERSION }}         ║
-          ║    👨‍💻 Triggered by: ${{ github.actor }}      ║
-          ╚═══════════════════════════════════════════════╝
-          "
-          echo "📅 Build started at: $(date)"
-          echo "🔧 Workflow: ${{ github.workflow }}"
-          echo "📝 Commit: ${{ github.event.head_commit.message }}"
-
-      - name: Generate Timestamp
-        id: timestamp
-        run: echo "time=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
-
-  build-and-release:
-    name: "🏗️ Build & Release"
-    runs-on: ubuntu-latest
-    needs: welcome
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+          echo '
+             _ _ _____   _        _       
+            | | |  ___| | |      | |      
+          __| | | |__ __| |_ __  | | ___  
+         / _` | |  __|/ _` | _  | |/ _ \ 
+        | (_| | | |  | (_| | | | | | (_) |
+         \__,_|_|_|   \__,_|_| |_|_|\___/ 
+                                       
+            ✨ Starting Automated Build for ClearLagg Addon ✨
+            -----------------------------------------------------
+            Commit: ${{ github.sha }}
+            Run ID: ${{ github.run_id }}
+            -----------------------------------------------------
+          '
+          
+      - name: 📥 Checkout Repository Code
+        uses: actions/checkout@v4 # Gunakan versi terbaru
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          lfs: true # Penting jika ada file besar (misal: tekstur)
 
-      - name: Display Build Header
+      # ----------------------------------------------------------------------
+      # 🛠️ Persiapan Lingkungan
+      # ----------------------------------------------------------------------
+      - name: 💻 Install Node.js (for Manifest Script)
+        uses: actions/setup-node@v4 # Gunakan versi terbaru
+        with:
+          node-version: 20 # Gunakan versi LTS terbaru
+          
+      - name: ⚙️ Set Minecraft Target Version
+        id: mcversion
         run: |
-          echo "
-          ╔═══════════════════════════════════════════════╗
-          ║                🏗️ BUILD PHASE                ║
-          ║            Packaging Minecraft Addon         ║
-          ╚═══════════════════════════════════════════════╝
-          "
-
-      - name: Validate Repository Structure
+          # Versi Minecraft yang dijadikan target
+          TARGET_VERSION="1.21.0"
+          echo "MC_TARGET_VERSION=$TARGET_VERSION" >> $GITHUB_ENV
+          echo "Target MC Version: $TARGET_VERSION"
+          
+      # ----------------------------------------------------------------------
+      # 📝 Pembaruan Manifest Otomatis
+      # ----------------------------------------------------------------------
+      - name: 📄 Create Manifest Update Script (Node.js)
         run: |
-          echo "🔍 Validating repository structure..."
-          
-          # Check essential directories
-          REQUIRED_DIRS=(
-            "ClearLagg-Addon/behavior_packs/ClearLagg_BP"
-            "ClearLagg-Addon/resource_packs/ClearLagg_RP"
-          )
-          
-          for dir in "${REQUIRED_DIRS[@]}"; do
-            if [ -d "$dir" ]; then
-              echo "✅ Directory found: $dir"
-            else
-              echo "❌ Missing directory: $dir"
-              exit 1
-            fi
-          done
-          
-          # Check essential files
-          REQUIRED_FILES=(
-            "ClearLagg-Addon/behavior_packs/ClearLagg_BP/manifest.json"
-            "ClearLagg-Addon/resource_packs/ClearLagg_RP/manifest.json"
-          )
-          
-          for file in "${REQUIRED_FILES[@]}"; do
-            if [ -f "$file" ]; then
-              echo "✅ File found: $file"
-            else
-              echo "❌ Missing file: $file"
-              exit 1
-            fi
-          done
-          
-          echo "🎯 Repository structure validation completed!"
-
-      - name: Detect Version Bump Type
-        id: detect_version
-        run: |
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            VERSION_TYPE="${{ github.event.inputs.version_bump }}"
-          else
-            # Analyze commit message to determine version bump type
-            COMMIT_MSG="${{ github.event.head_commit.message }}"
-            case "${COMMIT_MSG}" in
-              *"[major]"*|*"breaking"*|*"BREAKING"*) VERSION_TYPE="major" ;;
-              *"[minor]"*|*"feat"*|*"feature"*) VERSION_TYPE="minor" ;;
-              *) VERSION_TYPE="patch" ;;
-            esac
-          fi
-          echo "version_type=$VERSION_TYPE" >> $GITHUB_OUTPUT
-          echo "📈 Version bump type: $VERSION_TYPE"
-
-      - name: Create Update Script
-        run: |
-          cat > update_manifest.js << 'EOF'
+          mkdir -p scripts
+          cat > scripts/update_manifest.js << 'EOF'
           const fs = require("fs");
+          const path = require("path");
 
-          console.log("🔧 Starting manifest update...");
-
+          console.log("======================================");
+          console.log("       🔧 Manifest Updater Script      ");
+          console.log("======================================");
+          
+          // Daftar path ke file manifest yang perlu diupdate
           const manifests = [
             "ClearLagg-Addon/behavior_packs/ClearLagg_BP/manifest.json",
             "ClearLagg-Addon/resource_packs/ClearLagg_RP/manifest.json"
           ];
+          
+          // Ambil versi MC dari environment variable
+          const minEngineVersion = process.env.MC_TARGET_VERSION || "1.21.0";
+          const minEngineArray = minEngineVersion.split('.').map(Number);
 
-          const versionBump = "${{ steps.detect_version.outputs.version_type }}" || "patch";
-
+          let updatedCount = 0;
+          
           manifests.forEach(filePath => {
             if (!fs.existsSync(filePath)) {
-              console.log("❌ File not found:", filePath);
+              console.log(`❌ File not found: ${filePath}`);
               return;
             }
 
             try {
-              const data = JSON.parse(fs.readFileSync(filePath, "utf8"));
-              console.log("📝 Updating:", filePath);
+              const fileContent = fs.readFileSync(filePath, "utf8");
+              const data = JSON.parse(fileContent);
+              console.log(`\n📝 Processing: ${filePath}`);
 
-              // Update version based on bump type
+              // 1. Update Versi Addon (Patch number + 1)
               if (data.header && data.header.version) {
                 const v = data.header.version;
-                
-                switch(versionBump) {
-                  case "major":
-                    data.header.version = [(v[0] || 1) + 1, 0, 0];
-                    break;
-                  case "minor":
-                    data.header.version = [v[0] || 1, (v[1] || 0) + 1, 0];
-                    break;
-                  case "patch":
-                  default:
-                    data.header.version = [v[0] || 1, v[1] || 0, (v[2] || 0) + 1];
-                    break;
-                }
-                console.log("   ✅ Version:", data.header.version, `(${versionBump})`);
+                // Pastikan versi adalah array 3 elemen, tingkatkan elemen ketiga
+                const newVersion = [v[0] || 1, v[1] || 0, (v[2] || 0) + 1]; 
+                data.header.version = newVersion;
+                console.log(`   ✅ Addon Version Updated: ${newVersion.join('.')}`);
+              } else {
+                 console.log(`   ⚠️ Header/Version not found.`);
               }
 
-              // Update min engine version
+              // 2. Update Minimum Engine Version
               if (data.header) {
-                data.header.min_engine_version = [1, 21, 0];
-                console.log("   ✅ Min engine version:", data.header.min_engine_version);
+                data.header.min_engine_version = minEngineArray;
+                console.log(`   ✅ Min Engine Version Set: ${minEngineArray.join('.')}`);
               }
 
-              fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-              console.log("💾 Saved:", filePath);
+              // Simpan kembali file dengan format JSON yang rapi (indent 2 spasi)
+              fs.writeFileSync(filePath, JSON.stringify(data, null, 2) + "\n");
+              console.log("   💾 Saved successfully.");
+              updatedCount++;
 
             } catch (error) {
-              console.log("❌ Error:", filePath, error.message);
+              console.log(`❌ Error processing ${filePath}: ${error.message}`);
             }
           });
 
-          console.log("🎉 Manifest update completed!");
+          if (updatedCount === 0) {
+             console.log("\n⚠️ No manifests were successfully updated.");
+             process.exit(1); # Gagal jika tidak ada yang terupdate
+          } else {
+             console.log(`\n🎉 Manifest Update Completed! ${updatedCount} files updated.`);
+          }
           EOF
+        env:
+          MC_TARGET_VERSION: ${{ env.MC_TARGET_VERSION }} # Teruskan variable ke Node.js
 
-      - name: Update Manifests
-        run: node update_manifest.js
+      - name: 🔁 Run Manifest Update Script
+        run: node scripts/update_manifest.js
+        env:
+          MC_TARGET_VERSION: ${{ env.MC_TARGET_VERSION }} # Pastikan variable tersedia di sini
 
-      - name: Validate JSON Syntax
+      - name: 🧐 Validate All JSON Files
+        # Memastikan semua JSON valid setelah di-update
         run: |
-          echo "🔍 Validating JSON files..."
-          find ClearLagg-Addon -name "*.json" | while read file; do
-            echo "📄 Validating: $file"
-            if python -m json.tool "$file" > /dev/null 2>&1; then
-              echo "✅ Valid JSON: $file"
-            else
-              echo "❌ Invalid JSON: $file"
-              exit 1
-            fi
-          done
-          echo "🎉 All JSON files are valid!"
-
-      - name: Create MCADDON Package
-        run: |
-          echo "📦 Creating MCADDON package..."
-          echo "=========================================="
+          echo "🔍 Validating JSON syntax across ClearLagg-Addon directory..."
+          find ClearLagg-Addon -name "*.json" -exec python3 -m json.tool {} > /dev/null \;
+          echo "✅ All JSON files are valid."
           
-          # Create the MCADDON file
+      # ----------------------------------------------------------------------
+      # 📦 Proses Packaging
+      # ----------------------------------------------------------------------
+      - name: 🎁 Create .mcaddon and Separate .zip Packages
+        run: |
+          echo "📦 Starting Addon Packaging..."
+          
+          # 1. Membuat .mcaddon (Complete Addon)
           cd ClearLagg-Addon
           zip -r ../ClearLagg_Addon.mcaddon behavior_packs resource_packs
-          cd ..
+          echo "✅ ClearLagg_Addon.mcaddon created."
           
-          # Verify the package
-          if [ -f "ClearLagg_Addon.mcaddon" ]; then
-            echo "✅ MCADDON package created successfully!"
-            echo "📊 File size: $(du -h ClearLagg_Addon.mcaddon | cut -f1)"
-          else
-            echo "❌ Failed to create MCADDON package"
-            exit 1
-          fi
-
-      - name: Create Separate Packages
-        run: |
-          echo "📁 Creating separate package files..."
-          echo "=========================================="
+          # 2. Membuat ZIP untuk Behavior Pack
+          cd behavior_packs
+          zip -r ../../../ClearLagg_BP.zip ClearLagg_BP
+          echo "✅ ClearLagg_BP.zip created."
           
-          # Behavior Pack
-          echo "🎯 Creating Behavior Pack..."
-          cd ClearLagg-Addon/behavior_packs
-          zip -r ../../ClearLagg_BP.zip ClearLagg_BP
-          cd ../..
-          echo "✅ Behavior Pack created"
+          # 3. Membuat ZIP untuk Resource Pack
+          cd ../resource_packs
+          zip -r ../../../ClearLagg_RP.zip ClearLagg_RP
+          echo "✅ ClearLagg_RP.zip created."
           
-          # Resource Pack
-          echo "🎨 Creating Resource Pack..."
-          cd ClearLagg-Addon/resource_packs
-          zip -r ../../ClearLagg_RP.zip ClearLagg_RP
-          cd ../..
-          echo "✅ Resource Pack created"
+          cd ../../.. # Kembali ke root repo
           
-          # Display file information
-          echo ""
-          echo "📦 Generated Packages:"
-          ls -lh *.mcaddon *.zip
-
-      - name: Verify Build Artifacts
-        run: |
-          echo "🔍 Verifying build artifacts..."
-          echo "=========================================="
+          echo "======================================"
+          echo "   Final Build Artifacts: "
+          ls -lh ClearLagg_Addon.mcaddon ClearLagg_BP.zip ClearLagg_RP.zip 2>/dev/null
+          echo "======================================"
           
-          ARTIFACTS=(
-            "ClearLagg_Addon.mcaddon"
-            "ClearLagg_BP.zip"
-            "ClearLagg_RP.zip"
-          )
-          
-          all_good=true
-          for artifact in "${ARTIFACTS[@]}"; do
-            if [ -f "$artifact" ]; then
-              size=$(du -h "$artifact" | cut -f1)
-              echo "✅ $artifact - $size"
-            else
-              echo "❌ $artifact - MISSING"
-              all_good=false
-            fi
-          done
-          
-          if [ "$all_good" = true ]; then
-            echo "🎉 All artifacts verified successfully!"
-          else
-            echo "💥 Some artifacts failed verification"
-            exit 1
-          fi
-
-      - name: Display Release Header
-        run: |
-          echo "
-          ╔═══════════════════════════════════════════════╗
-          ║                🚀 RELEASE PHASE              ║
-          ║         Publishing to GitHub Releases        ║
-          ╚═══════════════════════════════════════════════╝
-          "
-
-      - name: Generate Release Notes
-        run: |
-          BUILD_DATE=$(date +'%Y-%m-%d %H:%M:%S')
-          cat > release_notes.md << EOF
-          # 🧹 ClearLagg Addon v1.0.${{ github.run_number }}
-          
-          ## 🎯 Minecraft Performance Enhancement
-          
-          **Automated Build** • **Version 1.0.${{ github.run_number }}** • **Minecraft ${{ env.MC_VERSION }}**
-          
-          ### 📊 Build Information
-          - **Build Number:** #${{ github.run_number }}
-          - **Build Date:** $BUILD_DATE
-          - **Minecraft Version:** ${{ env.MC_VERSION }}
-          - **Version Bump:** ${{ steps.detect_version.outputs.version_type }}
-          - **Triggered by:** ${{ github.actor }}
-          - **Commit:** \`${{ github.sha }}\`
-          
-          ### 📦 Available Downloads
-          
-          | File | Type | Description |
-          |------|------|-------------|
-          | \`ClearLagg_Addon.mcaddon\` | Complete Package | 🎯 **Recommended** - Easy one-click install |
-          | \`ClearLagg_BP.zip\` | Behavior Pack | Contains all game logic and functionality |
-          | \`ClearLagg_RP.zip\` | Resource Pack | Contains textures, sounds, and visuals |
-          
-          ### 🚀 Installation Guide
-          
-          #### Method 1: MCADDON (Recommended)
-          1. Download \`ClearLagg_Addon.mcaddon\`
-          2. Double-click the file to automatically import into Minecraft
-          3. Activate in your world settings under "Behavior Packs" and "Resource Packs"
-          4. Enjoy lag-free gameplay! 🎮
-          
-          #### Method 2: Manual Installation
-          1. Download both ZIP files
-          2. Extract them to your Minecraft development_behavior_packs and development_resource_packs folders
-          3. Activate in world settings
-          
-          ### 🔧 Features
-          - ✅ Automatic entity cleanup
-          - ✅ Performance optimization
-          - ✅ Compatible with Minecraft Bedrock ${{ env.MC_VERSION }}
-          - ✅ Regular updates and maintenance
-          
-          ### 📁 File Structure
-          \`\`\`
-          ClearLagg-Addon/
-          ├── behavior_packs/ClearLagg_BP/
-          │   ├── manifest.json
-          │   ├── pack_icon.png
-          │   └── (game logic files)
-          └── resource_packs/ClearLagg_RP/
-              ├── manifest.json
-              ├── pack_icon.png
-              └── (resource files)
-          \`\`\`
-          
-          ---
-          *🤖 Automatically built with GitHub Actions • 🕒 $BUILD_DATE*
-          EOF
-          
-          echo "Release notes generated successfully!"
-          echo "=== Release Notes Preview ==="
-          cat release_notes.md
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+      # ----------------------------------------------------------------------
+      # 🚀 Pembuatan GitHub Release
+      # ----------------------------------------------------------------------
+      - name: 🏷️ Create and Publish GitHub Release
+        uses: softprops/action-gh-release@v2 # Gunakan versi terbaru
         with:
+          # Tag berdasarkan Major.Minor.GitHubRunNumber
           tag_name: v1.0.${{ github.run_number }}
-          name: "ClearLagg Addon v1.0.${{ github.run_number }}"
-          body_path: release_notes.md
+          name: "✨ ClearLagg Addon v1.0.${{ github.run_number }}"
+          body: |
+            ## 🧹 ClearLagg Addon for Minecraft Bedrock
+            
+            **Build Details:**
+            * **Release Tag:** `v1.0.${{ github.run_number }}`
+            * **Commit Hash:** `${{ github.sha }}`
+            * **Target Minecraft Version:** `${{ env.MC_TARGET_VERSION }}`
+            * **Date:** $(date +'%Y-%m-%d %H:%M:%S %Z')
+            
+            ---
+            ### 📦 File Downloads:
+            | File Name | Description |
+            | :--- | :--- |
+            | `ClearLagg_Addon.mcaddon` | **Complete Addon Package (Recommended)** |
+            | `ClearLagg_BP.zip` | Behavior Pack Only |
+            | `ClearLagg_RP.zip` | Resource Pack Only |
+            
+            ### 🛠️ Perubahan Otomatis:
+            * Nomor Patch Addon di `manifest.json` telah dinaikkan secara otomatis.
+            * `min_engine_version` diatur ke `${{ env.MC_TARGET_VERSION }}`.
+            
+            ### 🚀 Cara Penggunaan:
+            1. Unduh file **`.mcaddon`** (disarankan).
+            2. Klik dua kali file tersebut untuk mengimpor ke Minecraft Bedrock.
+            3. Aktifkan **Behavior Pack** di World Settings.
+            4. Pastikan fitur **'Holiday Creator Features'** atau sejenisnya diaktifkan jika addon menggunakan fungsi eksperimental.
+            5. Nikmati permainan bebas lag!
+            
+            ---
+            *Automated build powered by GitHub Actions. 🤖*
+          # List file yang akan diunggah
           files: |
             ClearLagg_Addon.mcaddon
             ClearLagg_BP.zip
             ClearLagg_RP.zip
           draft: false
           prerelease: false
-          generate_release_notes: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  completion:
-    name: "🎉 Build Complete"
-    runs-on: ubuntu-latest
-    needs: [welcome, build-and-release]
-    if: always()
-    steps:
-      - name: Display Completion Message
-        run: |
-          if [ "${{ needs.build-and-release.result }}" == "success" ]; then
-            echo "
-            ╔═══════════════════════════════════════════════╗
-            ║               🎉 BUILD COMPLETE!            ║
-            ║          ClearLagg Addon Successfully        ║
-            ║              Built & Released!               ║
-            ║                                               ║
-            ║    📦 Release: v1.0.${{ github.run_number }} ║
-            ║    🎮 Minecraft: ${{ env.MC_VERSION }}       ║
-            ║    👤 By: ${{ github.actor }}                ║
-            ║                                               ║
-            ║    🌐 Check the Releases page for download   ║
-            ╚═══════════════════════════════════════════════╝
-            "
-          else
-            echo "
-            ╔═══════════════════════════════════════════════╗
-            ║               💥 BUILD FAILED!              ║
-            ║           Check the logs for errors          ║
-            ╚═══════════════════════════════════════════════╝
-            "
-            exit 1
-          fi
+          
