@@ -1,387 +1,514 @@
-name: Auto Build with Version Detection
+name: 🧹 ClearLag Addon - Auto Build & Release
 
 on:
   push:
     branches: [ "main" ]
   workflow_dispatch:
     inputs:
-      minecraft_version:
-        description: 'Minecraft Version (e.g., 1.21.124.2)'
+      version_bump:
+        description: 'Type of version bump'
         required: true
-        default: '1.21.124.2'
+        default: 'patch'
+        type: choice
+        options:
+        - patch
+        - minor
+        - major
+
+env:
+  ADDON_NAME: "ClearLagg"
+  MC_VERSION: "1.21.124.2"
+  NODE_VERSION: "18"
 
 jobs:
-  build:
+  welcome:
+    name: "🎉 Welcome & Setup"
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
+    outputs:
+      timestamp: ${{ steps.timestamp.outputs.time }}
+      run_id: ${{ github.run_id }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Display Welcome ASCII Art
+        run: |
+          echo "
+          ╔═══════════════════════════════════════════════╗
+          ║              🧹 CLEARLAG ADDON                        ║
+          ║           Minecraft Bedrock Edition                   ║
+          ║                                                       ║
+          ║    🚀 Auto Build System - GitHub Actions              ║
+          ║    📦 MCADDON Generator + Release Manager             ║
+          ║    🎯 Version: ${{ env.MC_VERSION }}                  ║
+          ║    👨‍💻 Triggered by: ${{ github.actor }}               ║
+          ╚═══════════════════════════════════════════════╝
+          "
+          echo "📅 Build started at: $(date)"
+          echo "🔧 Workflow: ${{ github.workflow }}"
+          echo "📝 Commit: ${{ github.event.head_commit.message }}"
 
-      - name: Install Node.js
+      - name: Generate Timestamp
+        id: timestamp
+        run: echo "time=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
+
+  validation:
+    name: "🔍 Validation & Setup"
+    runs-on: ubuntu-latest
+    needs: welcome
+    outputs:
+      version_type: ${{ steps.detect_version.outputs.version_type }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
 
-      - name: Detect Minecraft Version
-        id: detect_version
+      - name: Validate Repository Structure
+        id: validate_structure
         run: |
-          # Gunakan input manual atau auto-detect latest
-          if [ "${{ github.event.inputs.minecraft_version }}" != "" ]; then
-            MC_VERSION="${{ github.event.inputs.minecraft_version }}"
-            echo "🎯 Using manual version: $MC_VERSION"
-          else
-            # Auto-detect latest Minecraft Bedrock version
-            MC_VERSION="1.21.124.2"
-            echo "🔍 Auto-detected version: $MC_VERSION"
-          fi
+          echo "🔍 Validating repository structure..."
           
-          # Parse version components
-          VERSION_PARTS=(${MC_VERSION//./ })
-          MAJOR=${VERSION_PARTS[0]:-1}
-          MINOR=${VERSION_PARTS[1]:-21}
-          PATCH=${VERSION_PARTS[2]:-0}
-          BUILD=${VERSION_PARTS[3]:-0}
+          # Check essential directories
+          REQUIRED_DIRS=(
+            "ClearLagg-Addon/behavior_packs/ClearLagg_BP"
+            "ClearLagg-Addon/resource_packs/ClearLagg_RP"
+          )
           
-          echo "version=$MC_VERSION" >> $GITHUB_OUTPUT
-          echo "major=$MAJOR" >> $GITHUB_OUTPUT
-          echo "minor=$MINOR" >> $GITHUB_OUTPUT
-          echo "patch=$PATCH" >> $GITHUB_OUTPUT
-          echo "build=$BUILD" >> $GITHUB_OUTPUT
-          echo "engine_version=$MAJOR.$MINOR.$PATCH" >> $GITHUB_OUTPUT
-          
-          echo "MC_VERSION=$MC_VERSION" >> $GITHUB_ENV
-          echo "MAJOR=$MAJOR" >> $GITHUB_ENV
-          echo "MINOR=$MINOR" >> $GITHUB_ENV
-          echo "PATCH=$PATCH" >> $GITHUB_ENV
-          echo "BUILD=$BUILD" >> $GITHUB_ENV
-
-      - name: Create Smart Update Script
-        run: |
-          mkdir -p scripts
-          cat > scripts/smart_update.js << 'EOF'
-          const fs = require("fs");
-          const path = require("path");
-
-          // Configuration from environment
-          const MC_VERSION = process.env.MC_VERSION || "1.21.124.2";
-          const MAJOR = parseInt(process.env.MAJOR) || 1;
-          const MINOR = parseInt(process.env.MINOR) || 21;
-          const PATCH = parseInt(process.env.PATCH) || 0;
-          const BUILD = parseInt(process.env.BUILD) || 0;
-
-          console.log("🎯 Smart Manifest Updater");
-          console.log("📦 Target Version:", MC_VERSION);
-          console.log("🔧 Components:", { MAJOR, MINOR, PATCH, BUILD });
-
-          // Version compatibility rules
-          const COMPATIBILITY_RULES = {
-            "1.21": { format_version: 2, min_engine: [1, 21, 0], api: "1.21.0" },
-            "1.20": { format_version: 2, min_engine: [1, 20, 0], api: "1.20.0" },
-            "1.19": { format_version: 2, min_engine: [1, 19, 0], api: "1.19.0" },
-            "1.18": { format_version: 2, min_engine: [1, 18, 0], api: "1.18.0" },
-            "1.17": { format_version: 2, min_engine: [1, 17, 0], api: "1.17.0" },
-            "1.16": { format_version: 2, min_engine: [1, 16, 0], api: "1.16.0" }
-          };
-
-          function getCompatibility(major, minor) {
-            const key = `${major}.${minor}`;
-            return COMPATIBILITY_RULES[key] || COMPATIBILITY_RULES["1.21"];
-          }
-
-          function updateManifest(filePath, packType) {
-            if (!fs.existsSync(filePath)) {
-              console.log("❌ File not found:", filePath);
-              return false;
-            }
-
-            try {
-              console.log("\n📝 Updating:", filePath);
-              const data = JSON.parse(fs.readFileSync(filePath, "utf8"));
-              const compat = getCompatibility(MAJOR, MINOR);
-              let updated = false;
-
-              // Update based on pack type
-              if (packType === "behavior") {
-                // Behavior Pack specific updates
-                if (data.format_version !== undefined) {
-                  data.format_version = compat.format_version;
-                  console.log("   ✅ format_version →", compat.format_version);
-                  updated = true;
-                }
-
-                if (data.header) {
-                  // Increment version
-                  if (data.header.version) {
-                    const v = data.header.version;
-                    data.header.version = [v[0] || MAJOR, v[1] || MINOR, (v[2] || 0) + 1];
-                    console.log("   ✅ header.version →", data.header.version);
-                    updated = true;
-                  }
-
-                  // Update min_engine_version
-                  data.header.min_engine_version = compat.min_engine;
-                  console.log("   ✅ min_engine_version →", compat.min_engine);
-                  updated = true;
-
-                  // Update description with version info
-                  if (data.header.description) {
-                    data.header.description = `ClearLagg Addon | MC ${MC_VERSION} | Auto-clearing system`;
-                    console.log("   ✅ description updated");
-                    updated = true;
-                  }
-                }
-
-                // Update modules
-                if (data.modules) {
-                  data.modules.forEach((module, index) => {
-                    if (module.version) {
-                      const v = module.version;
-                      module.version = [v[0] || MAJOR, v[1] || MINOR, (v[2] || 0) + 1];
-                      console.log(`   ✅ modules[${index}].version →`, module.version);
-                      updated = true;
-                    }
-                    
-                    // Update for script modules
-                    if (module.type === "script" && module.language === "javascript") {
-                      module.language = "javascript";
-                      console.log(`   ✅ modules[${index}].language → javascript`);
-                      updated = true;
-                    }
-                  });
-                }
-
-                // Update dependencies if any
-                if (data.dependencies) {
-                  data.dependencies.forEach((dep, index) => {
-                    if (dep.version) {
-                      dep.version = [MAJOR, MINOR, PATCH];
-                      console.log(`   ✅ dependencies[${index}].version →`, dep.version);
-                      updated = true;
-                    }
-                  });
-                }
-
-              } else if (packType === "resource") {
-                // Resource Pack specific updates
-                if (data.format_version !== undefined) {
-                  data.format_version = compat.format_version;
-                  console.log("   ✅ format_version →", compat.format_version);
-                  updated = true;
-                }
-
-                if (data.header) {
-                  // Increment version
-                  if (data.header.version) {
-                    const v = data.header.version;
-                    data.header.version = [v[0] || MAJOR, v[1] || MINOR, (v[2] || 0) + 1];
-                    console.log("   ✅ header.version →", data.header.version);
-                    updated = true;
-                  }
-
-                  // Update min_engine_version
-                  data.header.min_engine_version = compat.min_engine;
-                  console.log("   ✅ min_engine_version →", compat.min_engine);
-                  updated = true;
-                }
-              }
-
-              if (updated) {
-                fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-                console.log("💾 Successfully updated:", filePath);
-                return true;
-              } else {
-                console.log("⚡ No updates needed:", filePath);
-                return false;
-              }
-
-            } catch (error) {
-              console.log("❌ Error updating", filePath, ":", error.message);
-              return false;
-            }
-          }
-
-          // Main execution
-          console.log("\n🚀 Starting smart manifest updates...");
-          console.log("=" .repeat(50));
-
-          const manifests = [
-            { path: "ClearLagg-Addon/behavior_packs/ClearLagg_BP/manifest.json", type: "behavior" },
-            { path: "ClearLagg-Addon/resource_packs/ClearLagg_RP/manifest.json", type: "resource" }
-          ];
-
-          let updatedCount = 0;
-          manifests.forEach(manifest => {
-            if (updateManifest(manifest.path, manifest.type)) {
-              updatedCount++;
-            }
-          });
-
-          console.log("=" .repeat(50));
-          console.log("🎉 Smart update completed!");
-          console.log("📊 Updated", updatedCount, "out of", manifests.length, "manifests");
-          console.log("🔧 Minecraft Version:", MC_VERSION);
-          console.log("🏷️ Compatibility:", getCompatibility(MAJOR, MINOR));
-
-          // Write version info to file for later use
-          const versionInfo = {
-            minecraft_version: MC_VERSION,
-            compatibility: getCompatibility(MAJOR, MINOR),
-            build_date: new Date().toISOString(),
-            build_number: process.env.GITHUB_RUN_NUMBER || "unknown"
-          };
-
-          fs.writeFileSync("version_info.json", JSON.stringify(versionInfo, null, 2));
-          console.log("📄 Version info saved to version_info.json");
-
-          EOF
-
-      - name: Run Smart Manifest Update
-        run: node scripts/smart_update.js
-        env:
-          MC_VERSION: ${{ steps.detect_version.outputs.version }}
-          MAJOR: ${{ steps.detect_version.outputs.major }}
-          MINOR: ${{ steps.detect_version.outputs.minor }}
-          PATCH: ${{ steps.detect_version.outputs.patch }}
-          BUILD: ${{ steps.detect_version.outputs.build }}
-          GITHUB_RUN_NUMBER: ${{ github.run_number }}
-
-      - name: Validate Updated Manifests
-        run: |
-          echo "🔍 Validating updated manifests..."
-          find ClearLagg-Addon -name "manifest.json" | while read file; do
-            echo "Checking: $file"
-            if python -m json.tool "$file" > /dev/null 2>&1; then
-              echo "✅ Valid: $file"
-              echo "--- Content ---"
-              cat "$file" | head -10
-              echo "---"
+          for dir in "${REQUIRED_DIRS[@]}"; do
+            if [ -d "$dir" ]; then
+              echo "✅ Directory found: $dir"
             else
-              echo "❌ Invalid: $file"
+              echo "❌ Missing directory: $dir"
               exit 1
             fi
           done
-
-      - name: Create Version-Specific Packages
-        run: |
-          echo "📦 Creating version-specific packages..."
-          MC_VERSION="${{ steps.detect_version.outputs.version }}"
           
-          # Create main MCADDON
+          # Check essential files
+          REQUIRED_FILES=(
+            "ClearLagg-Addon/behavior_packs/ClearLagg_BP/manifest.json"
+            "ClearLagg-Addon/resource_packs/ClearLagg_RP/manifest.json"
+          )
+          
+          for file in "${REQUIRED_FILES[@]}"; do
+            if [ -f "$file" ]; then
+              echo "✅ File found: $file"
+            else
+              echo "❌ Missing file: $file"
+              exit 1
+            fi
+          done
+          
+          echo "🎯 Repository structure validation completed!"
+
+      - name: Detect Version Bump Type
+        id: detect_version
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            VERSION_TYPE="${{ github.event.inputs.version_bump }}"
+          else
+            # Analyze commit message to determine version bump type
+            COMMIT_MSG="${{ github.event.head_commit.message }}"
+            case "${COMMIT_MSG}" in
+              *"[major]"*|*"breaking"*|*"BREAKING"*) VERSION_TYPE="major" ;;
+              *"[minor]"*|*"feat"*|*"feature"*) VERSION_TYPE="minor" ;;
+              *) VERSION_TYPE="patch" ;;
+            esac
+          fi
+          echo "version_type=$VERSION_TYPE" >> $GITHUB_OUTPUT
+          echo "📈 Version bump type: $VERSION_TYPE"
+
+  build:
+    name: "🏗️ Build & Package"
+    runs-on: ubuntu-latest
+    needs: [welcome, validation]
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Display Build Header
+        run: |
+          echo "
+          ╔═══════════════════════════════════════════════╗
+          ║                🏗️ BUILD PHASE                         ║
+          ║            Packaging Minecraft Addon                  ║
+          ╚═══════════════════════════════════════════════╝
+          "
+
+      - name: Create Advanced Update Script
+        run: |
+          mkdir -p scripts
+          cat > scripts/update_manifest.js << 'EOF'
+          const fs = require("fs");
+          const path = require("path");
+
+          // Color codes for terminal output
+          const colors = {
+            reset: "\x1b[0m",
+            bright: "\x1b[1m",
+            red: "\x1b[31m",
+            green: "\x1b[32m",
+            yellow: "\x1b[33m",
+            blue: "\x1b[34m",
+            magenta: "\x1b[35m",
+            cyan: "\x1b[36m"
+          };
+
+          function log(message, color = colors.reset) {
+            console.log(color + message + colors.reset);
+          }
+
+          function logSuccess(message) {
+            log("✅ " + message, colors.green);
+          }
+
+          function logError(message) {
+            log("❌ " + message, colors.red);
+          }
+
+          function logInfo(message) {
+            log("🔧 " + message, colors.blue);
+          }
+
+          function logWarning(message) {
+            log("⚠️ " + message, colors.yellow);
+          }
+
+          logInfo("Starting advanced manifest update process...");
+          log("📦 Addon: ClearLagg");
+          log("🎯 Minecraft Version: 1.21.124.2");
+
+          const manifests = [
+            {
+              path: "ClearLagg-Addon/behavior_packs/ClearLagg_BP/manifest.json",
+              type: "Behavior Pack"
+            },
+            {
+              path: "ClearLagg-Addon/resource_packs/ClearLagg_RP/manifest.json",
+              type: "Resource Pack"
+            }
+          ];
+
+          let totalUpdated = 0;
+
+          manifests.forEach(({path: filePath, type}) => {
+            logInfo(`Processing ${type}: ${filePath}`);
+            
+            if (!fs.existsSync(filePath)) {
+              logError(`File not found: ${filePath}`);
+              return;
+            }
+
+            try {
+              const data = JSON.parse(fs.readFileSync(filePath, "utf8"));
+              
+              // Store original version for logging
+              const originalVersion = data.header?.version ? [...data.header.version] : [1, 0, 0];
+              
+              // Update version based on bump type
+              const versionBump = "${{ needs.validation.outputs.version_type }}" || "patch";
+              
+              if (data.header && data.header.version) {
+                const v = data.header.version;
+                
+                switch(versionBump) {
+                  case "major":
+                    data.header.version = [(v[0] || 1) + 1, 0, 0];
+                    break;
+                  case "minor":
+                    data.header.version = [v[0] || 1, (v[1] || 0) + 1, 0];
+                    break;
+                  case "patch":
+                  default:
+                    data.header.version = [v[0] || 1, v[1] || 0, (v[2] || 0) + 1];
+                    break;
+                }
+                
+                logSuccess(`${type} version: ${originalVersion.join('.')} → ${data.header.version.join('.')} (${versionBump})`);
+              }
+
+              // Update min engine version
+              if (data.header) {
+                data.header.min_engine_version = [1, 21, 0];
+                logInfo(`${type} min engine version: ${data.header.min_engine_version.join('.')}`);
+              }
+
+              // Update metadata
+              data.header.name = data.header.name || "ClearLagg " + type;
+              data.header.description = data.header.description || "Lag reduction system for Minecraft Bedrock";
+              
+              // Write updated manifest
+              fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+              logSuccess(`Successfully updated: ${filePath}`);
+              totalUpdated++;
+
+            } catch (error) {
+              logError(`Failed to process ${filePath}: ${error.message}`);
+            }
+          });
+
+          if (totalUpdated === manifests.length) {
+            logSuccess("🎉 All manifests updated successfully!");
+          } else {
+            logWarning(`Updated ${totalUpdated}/${manifests.length} manifests`);
+          }
+          EOF
+
+      - name: Update Manifests with Version Bump
+        run: node scripts/update_manifest.js
+
+      - name: Validate JSON Syntax
+        run: |
+          echo "🔍 Validating JSON files..."
+          find ClearLagg-Addon -name "*.json" | while read file; do
+            echo "📄 Validating: $file"
+            if python -m json.tool "$file" > /dev/null 2>&1; then
+              echo "✅ Valid JSON: $file"
+            else
+              echo "❌ Invalid JSON: $file"
+              exit 1
+            fi
+          done
+          echo "🎉 All JSON files are valid!"
+
+      - name: Create MCADDON Package
+        run: |
+          echo "📦 Creating MCADDON package..."
+          echo "=========================================="
+          
+          # Display package structure
+          echo "📁 Package Structure:"
+          echo "ClearLagg-Addon/"
+          echo "├── behavior_packs/"
+          echo "│   └── ClearLagg_BP/"
+          find ClearLagg-Addon/behavior_packs/ClearLagg_BP -type f | head -5 | sed 's/^/│       ├── /'
+          echo "└── resource_packs/"
+          echo "    └── ClearLagg_RP/"
+          find ClearLagg-Addon/resource_packs/ClearLagg_RP -type f | head -5 | sed 's/^/        ├── /'
+          echo ""
+          
+          # Create the MCADDON file
           cd ClearLagg-Addon
-          zip -r "../ClearLagg_MC_${MC_VERSION}.mcaddon" *
+          zip -r ../ClearLagg_Addon_v1.0.${{ github.run_number }}.mcaddon behavior_packs resource_packs
+          cd ..
           
-          # Create individual packs
-          cd behavior_packs
-          zip -r "../../ClearLagg_BP_${MC_VERSION}.mcpack" *
-          cd ../resource_packs
-          zip -r "../../ClearLagg_RP_${MC_VERSION}.mcpack" *
-          cd ../..
-          
-          echo "✅ Packages created for Minecraft $MC_VERSION"
-          ls -la *.mcaddon *.mcpack
+          # Verify the package
+          if [ -f "ClearLagg_Addon_v1.0.${{ github.run_number }}.mcaddon" ]; then
+            echo "✅ MCADDON package created successfully!"
+            echo "📊 File size: $(du -h ClearLagg_Addon_v1.0.${{ github.run_number }}.mcaddon | cut -f1)"
+          else
+            echo "❌ Failed to create MCADDON package"
+            exit 1
+          fi
 
-      - name: Generate Compatibility Matrix
+      - name: Create Separate Packages
         run: |
-          echo "🔧 Generating compatibility information..."
-          MC_VERSION="${{ steps.detect_version.outputs.version }}"
-          cat > COMPATIBILITY.md << EOF
-          # ClearLagg Addon Compatibility
+          echo "📁 Creating separate package files..."
+          echo "=========================================="
           
-          ## Version Information
-          - **Addon Version:** 1.0.${{ github.run_number }}
-          - **Minecraft Target:** $MC_VERSION
-          - **Build Date:** $(date +'%Y-%m-%d %H:%M:%S')
-          - **Build Number:** ${{ github.run_number }}
+          # Behavior Pack
+          echo "🎯 Creating Behavior Pack..."
+          cd ClearLagg-Addon/behavior_packs
+          zip -r ../../ClearLagg_BehaviorPack_v1.0.${{ github.run_number }}.zip ClearLagg_BP
+          cd ../..
+          echo "✅ Behavior Pack created"
           
-          ## Supported Minecraft Versions
-          | Version | Format | Min Engine | Status |
-          |---------|--------|------------|--------|
-          | 1.21.x | 2 | [1, 21, 0] | ✅ Fully Supported |
-          | 1.20.x | 2 | [1, 20, 0] | ✅ Supported |
-          | 1.19.x | 2 | [1, 19, 0] | ✅ Supported |
-          | 1.18.x | 2 | [1, 18, 0] | ⚠️ Limited |
-          | 1.17.x | 2 | [1, 17, 0] | ⚠️ Limited |
-          | 1.16.x | 2 | [1, 16, 0] | ⚠️ Limited |
+          # Resource Pack
+          echo "🎨 Creating Resource Pack..."
+          cd ClearLagg-Addon/resource_packs
+          zip -r ../../ClearLagg_ResourcePack_v1.0.${{ github.run_number }}.zip ClearLagg_RP
+          cd ../..
+          echo "✅ Resource Pack created"
           
-          ## Package Files
-          - \`ClearLagg_MC_${MC_VERSION}.mcaddon\` - Complete package
-          - \`ClearLagg_BP_${MC_VERSION}.mcpack\` - Behavior pack only
-          - \`ClearLagg_RP_${MC_VERSION}.mcpack\` - Resource pack only
+          # Display file information
+          echo ""
+          echo "📦 Generated Packages:"
+          ls -lh *.mcaddon *.zip | awk '{print "📄 " $9 " - " $5}'
+
+      - name: Verify Build Artifacts
+        run: |
+          echo "🔍 Verifying build artifacts..."
+          echo "=========================================="
           
-          ## Auto-Detection Features
-          ✅ Automatic version detection  
-          ✅ Smart manifest updates  
-          ✅ Compatibility matrix generation  
-          ✅ Multi-version support  
+          ARTIFACTS=(
+            "ClearLagg_Addon_v1.0.${{ github.run_number }}.mcaddon"
+            "ClearLagg_BehaviorPack_v1.0.${{ github.run_number }}.zip"
+            "ClearLagg_ResourcePack_v1.0.${{ github.run_number }}.zip"
+          )
+          
+          all_good=true
+          for artifact in "${ARTIFACTS[@]}"; do
+            if [ -f "$artifact" ]; then
+              size=$(du -h "$artifact" | cut -f1)
+              echo "✅ $artifact - $size"
+              
+              # Basic file validation
+              if [ "$(wc -c < "$artifact")" -lt 100 ]; then
+                echo "❌ $artifact seems too small, might be corrupted"
+                all_good=false
+              fi
+            else
+              echo "❌ $artifact - MISSING"
+              all_good=false
+            fi
+          done
+          
+          if [ "$all_good" = true ]; then
+            echo "🎉 All artifacts verified successfully!"
+          else
+            echo "💥 Some artifacts failed verification"
+            exit 1
+          fi
+
+  release:
+    name: "🚀 Create Release"
+    runs-on: ubuntu-latest
+    needs: [welcome, build]
+    if: success()
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: ClearLagg_*
+          path: ./artifacts
+
+      - name: Display Release Header
+        run: |
+          echo "
+          ╔═══════════════════════════════════════════════╗
+          ║                🚀 RELEASE PHASE                       ║
+          ║         Publishing to GitHub Releases                 ║
+          ╚═══════════════════════════════════════════════╝
+          "
+
+      - name: Generate Release Notes
+        id: generate_notes
+        run: |
+          cat > release_notes.md << EOF
+          # 🧹 ClearLagg Addon v1.0.${{ github.run_number }}
+          
+          ## 🎯 Minecraft Performance Enhancement
+          
+          **Automated Build** • **Version 1.0.${{ github.run_number }}** • **Minecraft ${{ env.MC_VERSION }}**
+          
+          ### 📊 Build Information
+          - **Build Number:** #${{ github.run_number }}
+          - **Build Date:** ${{ needs.welcome.outputs.timestamp }}
+          - **Minecraft Version:** ${{ env.MC_VERSION }}
+          - **Version Bump:** ${{ needs.validation.outputs.version_type }}
+          - **Triggered by:** ${{ github.actor }}
+          - **Commit:** \`${{ github.sha }}\`
+          
+          ### 📦 Available Downloads
+          
+          | File | Type | Description |
+          |------|------|-------------|
+          | \`ClearLagg_Addon_v1.0.${{ github.run_number }}.mcaddon\` | Complete Package | 🎯 **Recommended** - Easy one-click install |
+          | \`ClearLagg_BehaviorPack_v1.0.${{ github.run_number }}.zip\` | Behavior Pack | Contains all game logic and functionality |
+          | \`ClearLagg_ResourcePack_v1.0.${{ github.run_number }}.zip\` | Resource Pack | Contains textures, sounds, and visuals |
+          
+          ### 🚀 Installation Guide
+          
+          #### Method 1: MCADDON (Recommended)
+          1. Download \`ClearLagg_Addon_v1.0.${{ github.run_number }}.mcaddon\`
+          2. Double-click the file to automatically import into Minecraft
+          3. Activate in your world settings under "Behavior Packs" and "Resource Packs"
+          4. Enjoy lag-free gameplay! 🎮
+          
+          #### Method 2: Manual Installation
+          1. Download both ZIP files
+          2. Extract them to your Minecraft development_behavior_packs and development_resource_packs folders
+          3. Activate in world settings
+          
+          ### 🔧 Features
+          - ✅ Automatic entity cleanup
+          - ✅ Performance optimization
+          - ✅ Compatible with Minecraft Bedrock ${{ env.MC_VERSION }}
+          - ✅ Regular updates and maintenance
+          
+          ### 📁 File Structure
+          \`\`\`
+          ClearLagg-Addon/
+          ├── behavior_packs/ClearLagg_BP/
+          │   ├── manifest.json
+          │   ├── pack_icon.png
+          │   └── (game logic files)
+          └── resource_packs/ClearLagg_RP/
+              ├── manifest.json
+              ├── pack_icon.png
+              └── (resource files)
+          \`\`\`
+          
+          ---
+          *🤖 Automatically built with GitHub Actions • 🕒 ${{ needs.welcome.outputs.timestamp }}*
           EOF
           
-          echo "📄 Compatibility matrix generated"
+          echo "Release notes generated successfully!"
 
-      - name: Create Git Tag with Version
-        id: create_tag
-        run: |
-          MC_VERSION="${{ steps.detect_version.outputs.version }}"
-          TAG_NAME="v1.0.${{ github.run_number }}-mc$MC_VERSION"
-          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
-          
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git tag $TAG_NAME
-          git push origin $TAG_NAME
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Create Smart Release
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ steps.create_tag.outputs.tag_name }}
-          name: "ClearLagg for MC ${{ steps.detect_version.outputs.version }}"
-          body: |
-            ## 🧹 ClearLagg Addon - Smart Auto-Build
-            
-            ### 🔧 Version Information
-            **Minecraft Version:** ${{ steps.detect_version.outputs.version }}  
-            **Addon Version:** 1.0.${{ github.run_number }}  
-            **Build Date:** $(date +'%Y-%m-%d %H:%M:%S')  
-            **Compatibility:** 1.16.0 - 1.21.x
-            
-            ### 📦 Download Files
-            - **`ClearLagg_MC_${{ steps.detect_version.outputs.version }}.mcaddon`** - Complete package (Recommended)
-            - **`ClearLagg_BP_${{ steps.detect_version.outputs.version }}.mcpack`** - Behavior pack only
-            - **`ClearLagg_RP_${{ steps.detect_version.outputs.version }}.mcpack`** - Resource pack only
-            
-            ### 🚀 Features
-            ✅ **Auto Version Detection** - Smart manifest updates  
-            ✅ **Multi-Version Support** - Works with 1.16-1.21  
-            ✅ **Progress Bar System** - Real-time clearing progress  
-            ✅ **Chat History** - Undo/redo functionality  
-            ✅ **Auto Item Clearing** - Configurable intervals  
-            
-            ### 🎯 Installation
-            1. Download the `.mcaddon` file matching your Minecraft version
-            2. Double-click to import
-            3. Activate in world settings
-            4. Use `!clearlagg help` for commands
-            
-            ### 🔄 Auto-Update System
-            This build automatically:
-            - Detects Minecraft version
-            - Updates manifest compatibility
-            - Sets correct format versions
-            - Generates version-specific packages
-            
-            ---
-            *Built with Smart Auto-Detection System*
+          tag_name: v1.0.${{ github.run_number }}
+          name: "ClearLagg Addon v1.0.${{ github.run_number }}"
+          body_path: release_notes.md
           files: |
-            ClearLagg_MC_${{ steps.detect_version.outputs.version }}.mcaddon
-            ClearLagg_BP_${{ steps.detect_version.outputs.version }}.mcpack
-            ClearLagg_RP_${{ steps.detect_version.outputs.version }}.mcpack
-            COMPATIBILITY.md
-            version_info.json
+            ClearLagg_Addon_v1.0.${{ github.run_number }}.mcaddon
+            ClearLagg_BehaviorPack_v1.0.${{ github.run_number }}.zip
+            ClearLagg_ResourcePack_v1.0.${{ github.run_number }}.zip
           draft: false
           prerelease: false
+          generate_release_notes: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  completion:
+    name: "🎉 Build Complete"
+    runs-on: ubuntu-latest
+    needs: [welcome, build, release]
+    if: always()
+    steps:
+      - name: Display Completion Message
+        run: |
+          if [ "${{ needs.build.result }}" == "success" ] && [ "${{ needs.release.result }}" == "success" ]; then
+            echo "
+            ╔═══════════════════════════════════════════════╗
+            ║               🎉 BUILD COMPLETE!                      ║
+            ║          ClearLagg Addon Successfully                 ║
+            ║              Built & Released!                        ║
+            ║                                                       ║
+            ║    📦 Release: v1.0.${{ github.run_number }}          ║
+            ║    🎮 Minecraft: ${{ env.MC_VERSION }}                ║
+            ║    ⏱️ Duration: ${{ job.status }}                     ║
+            ║    👤 By: ${{ github.actor }}                         ║
+            ║                                                       ║
+            ║    🌐 Check the Releases page for download            ║
+            ╚═══════════════════════════════════════════════╝
+            "
+          else
+            echo "
+            ╔═══════════════════════════════════════════════╗
+            ║               💥 BUILD FAILED!                        ║
+            ║           Check the logs for errors                   ║
+            ╚═══════════════════════════════════════════════╝
+            "
+            exit 1
+          fi
+
+      - name: Upload Build Logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs
+          path: ${{ github.workspace }}
+          retention-days: 7
