@@ -17,7 +17,7 @@ class ClearLaggSystem {
 
         // Config
         this.config = {
-            clearInterval: 300,
+            clearInterval: 30,
             warningTime: 30,
             maxItems: 500,
             enableAutoClear: true,
