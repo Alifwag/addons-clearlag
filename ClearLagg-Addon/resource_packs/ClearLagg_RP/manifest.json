@@ -1,17 +1,16 @@
 {
   "format_version": 2,
   "header": {
-    "description": "ClearLagg Resource Pack",
-    "name": "ClearLagg RP",
-    "uuid": "c5455a4e-7a18-4c23-b82c-c4d5daac1f6a",
+    "name": "ClearLagg_RP",
+    "description": "Resource Pack untuk ClearLagg: item buku panduan, pengaturan, dan admin. Gunakan bersama ClearLagg_BP.",
+    "uuid": "c4e1a82f-8e1b-4a30-9d77-2b1e3f4a6b7c",
     "version": [1, 0, 0],
-    "min_engine_version": [1, 19, 0]
+    "min_engine_version": [1, 16, 0]
   },
   "modules": [
     {
-      "description": "Resource Module",
       "type": "resources",
-      "uuid": "5df23452-96c9-4209-b699-a955c22bc738",
+      "uuid": "f0c3d4b5-6a7b-4cde-9f01-23456789abcd",
       "version": [1, 0, 0]
     }
   ]
