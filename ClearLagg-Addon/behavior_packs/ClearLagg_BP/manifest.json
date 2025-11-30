@@ -1,24 +1,19 @@
 {
   "format_version": 2,
   "header": {
-    "description": "ClearLagg Behavior Pack\n by Alif joind my §l§aDiscord",
-    "name": "ClearLagg BP",
-    "uuid": "a6874ed9-badb-49ee-a10d-b49737cf87a8",
+    "name": "ClearLagg_BP",
+    "description": "Behavior Pack untuk ClearLagg addon - scripting & gameplay logic",
+    "uuid": "b5d2f9c1-4a9d-4a6d-a0f0-1e2c3d4b5a6f",
     "version": [1, 0, 0],
-    "min_engine_version": [1, 19, 0]
+    "min_engine_version": [1, 16, 0]
   },
   "modules": [
     {
-      "description": "Behavior Module",
-      "type": "data",
-      "uuid": "7d6ab0de-327f-4f6e-a1e7-481454fc2bc2",
-      "version": [1, 0, 0]
-    }
-  ],
-  "dependencies": [
-    {
-      "uuid": "c5455a4e-7a18-4c23-b82c-c4d5daac1f6a",
-      "version": [1, 0, 0]
+      "type": "scripting",
+      "description": "Main script untuk ClearLagg",
+      "uuid": "d09f2b2d-ae7f-4f5b-8f9a-2b3c4d5e6f70",
+      "version": [1, 0, 0],
+      "entry": "scripts/main.js"
     }
   ]
 }
