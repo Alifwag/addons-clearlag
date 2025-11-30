@@ -194,101 +194,83 @@ Report issues through Discord with this template:
 
 ---
 
-❓ FAQ — Clickable Questions
+---
 
-Navigation
+# ❓ FAQ — Frequently Asked Questions
 
-Click a question below:
+Below is a list of common questions.  
+Click any question to jump directly to the answer:
 
-Is this addon safe for my world?
-
-What entities does ClearLagg remove?
-
-Can I add or remove entity types?
-
-Is there a minimum interval?
-
-Why is the progress bar not showing?
-
-Can I use this in realms/public servers?
-
-Will this addon continue to receive updates?
-
-
+### 📌 **Quick Navigation**
+- [Is this addon safe for my world?](#is-this-addon-safe-for-my-world)
+- [What entities does ClearLagg remove?](#what-entities-does-clearlagg-remove)
+- [Can I add or remove entity types?](#can-i-add-or-remove-entity-types)
+- [Is there a minimum interval?](#is-there-a-minimum-interval)
+- [Why is the progress bar not showing?](#why-is-the-progress-bar-not-showing)
+- [Can I use this in realms or public servers?](#can-i-use-this-in-realms-or-public-servers)
+- [Will this addon continue to receive updates?](#will-this-addon-continue-to-receive-updates)
 
 ---
 
-Is this addon safe for my world?
-
-Yes — it is safe for all standard worlds.
-However, always make a backup before enabling any addon.
-
+## 🔒 Is this addon safe for my world?
+> **Yes — it is safe for all standard worlds.**  
+> However, it is always recommended to **create a backup** before installing any addon, especially for production or long-term survival worlds.
 
 ---
 
-What entities does ClearLagg remove?
+## 🎯 What entities does ClearLagg remove?
+ClearLagg removes lag-causing entities, including:
 
-It removes:
+- Dropped items  
+- Arrows  
+- Snowballs  
+- Eggs  
+- Ender Pearls  
+- Splash potions  
+- XP bottles  
+- Other optional/custom entities (editable in the config)
 
-Dropped items
-
-Arrows
-
-Snowballs
-
-Eggs
-
-Ender pearls
-
-Splash potions
-
-XP bottles
-
-And additional configurable entities
-
-
+> These can be modified freely depending on your server’s needs.
 
 ---
 
-Can I add or remove entity types?
+## ⚙️ Can I add or remove entity types?
+> **Yes! Fully customizable.**  
+Just edit the array named:
 
-Yes!
-Edit the clearedEntities array inside main.js.
+clearedEntities
 
-
----
-
-Is there a minimum interval?
-
-Yes — 30 seconds to prevent performance issues.
-
+inside **main.js** and add or remove any entity identifier you want.
 
 ---
 
-Why is the progress bar not showing?
-
-Ensure:
-
-Titles are enabled in game settings
-
-Your version of MC supports onScreenDisplay.setTitle
-
-
+## ⏱ Is there a minimum interval?
+> **Yes — the minimum interval is 30 seconds.**  
+This prevents the server from being overloaded by constant clearing.
 
 ---
 
-Can I use this in realms/public servers?
+## 🖥 Why is the progress bar not showing?
+Make sure these conditions are met:
 
-Yes.
-However, some commands (heal, rtp, fly) may require OP permission.
-
+✔ Titles/messages are enabled in your Minecraft settings  
+✔ Your version of Minecraft supports `onScreenDisplay.setTitle`  
+✔ The HUD/GUI is not turned off by resource packs or UI add-ons  
 
 ---
 
-Will this addon continue to receive updates?
+## 🌐 Can I use this in realms or public servers?
+> **Yes — fully supported.**  
 
-Yes — this project is actively maintained.
+However:  
+- Commands like `!heal`, `!rtp`, or `!fly` may require **OP permissions**.  
+- Some servers restrict teleport/utility commands for security reasons.
 
+---
+
+## 🔄 Will this addon continue to receive updates?
+> **Yes — ClearLagg is actively maintained and updated frequently.**  
+Future updates will include improved performance, UI, commands, and customization features.
 
 ---
 
