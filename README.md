@@ -1,7 +1,12 @@
-<!-- README.md — ClearLagg Add-on (Enhanced README with Inline Styling & Animated Discord Badge) -->
+<!-- ============================== -->
+<!--  README.md — ClearLagg Add-on  -->
+<!--  Fully Enhanced + Styled MD    -->
+<!--  READ.md full chat deepseak    -->
+<!-- ============================== -->
 
 <!-- ===== HEADER (centered badges + animated discord) ===== -->
 <div align="center" style="margin:18px 0 24px;">
+
   <div style="display:inline-flex; gap:10px; align-items:center; background:linear-gradient(90deg,#f8fbff,#f2f6ff);
               padding:10px 14px; border-radius:12px; box-shadow:0 6px 24px rgba(15,25,60,0.12);">
     <img alt="Minecraft Bedrock" src="https://img.shields.io/badge/Minecraft-Bedrock_Editon-00AA00?style=for-the-badge&logo=minecraft" style="height:34px;">
@@ -11,12 +16,13 @@
   </div>
 
   <div style="margin-top:12px; display:inline-flex; align-items:center; gap:8px;">
-    <!-- Clickable Discord badge (replace invite link) -->
     <a href="https://discord.gg/xxxxxxx" target="_blank" rel="noopener noreferrer"
        style="text-decoration:none; display:inline-flex; align-items:center; gap:8px;">
-      <img alt="Discord Badge" src="https://img.shields.io/badge/Discord-Join_Community-5865F2?style=for-the-badge&logo=discord&logoColor=white" style="height:36px;"/>
-      <!-- small sparkle GIF to add motion -->
-      <img alt="glow" src="https://media.tenor.com/On7kv7cXx7sAAAAC/sparkle.gif" style="height:30px; border-radius:6px; box-shadow:0 6px 18px rgba(88,101,242,0.25);">
+      <img alt="Discord Badge"
+           src="https://img.shields.io/badge/Discord-Join_Community-5865F2?style=for-the-badge&logo=discord&logoColor=white"
+           style="height:36px;"/>
+      <img alt="glow" src="https://media.tenor.com/On7kv7cXx7sAAAAC/sparkle.gif"
+           style="height:30px; border-radius:6px; box-shadow:0 6px 18px rgba(88,101,242,0.25);">
     </a>
     <span style="color:#657294; font-size:13px;">Join our Discord for support, bug reports & community</span>
   </div>
@@ -24,199 +30,277 @@
 
 <div align="center">
   <h1 style="margin:6px 0 6px;">🧹 ClearLagg Add-on</h1>
-  <p style="margin:0; color:#6b7da8;">Pembersih lag untuk Minecraft Bedrock — ringan, cepat, dan mudah dikonfigurasi.</p>
+  <p style="margin:0; color:#6b7da8;">Lightweight lag cleaner for Minecraft Bedrock — fast, configurable, and easy to use.</p>
 </div>
 
 ---
 
-<!-- ===== INTRO & QUICK HIGHLIGHTS ===== -->
-## 🔥 Sekilas
-**ClearLagg** adalah add-on untuk *Minecraft Bedrock Edition* (MCPE) yang otomatis membersihkan item dan entitas penyebab lag. Cocok untuk: server kecil/menengah, realm, world survival, dan development testing.
+## 🔥 Overview
 
-**Highlights**
-- Auto + manual clearing  
-- Progress bar HUD untuk pemain  
-- Peringatan sebelum pembersihan  
-- Chat history (opsional) & diagnostics  
-- Perintah utilitas (teleport, heal, test, dsb.)
+**ClearLagg** is a lightweight and efficient *Minecraft Bedrock Edition* addon that automatically removes lag-causing items and entities from your world or server.
+
+Perfect for:
+- Survival worlds  
+- Realms  
+- Small/medium servers  
+- Developers testing performance  
+
+### **Highlights**
+- Auto & manual clearing  
+- Progress bar HUD  
+- Cleanup warnings  
+- Chat history (optional)  
+- Utility commands (back, rtp, heal, etc.)  
+- Safe performance defaults  
 
 ---
 
-<!-- ===== VISUAL PREVIEW (optional image placeholders) ===== -->
+## 🖼 Preview  
 <div align="center" style="margin:12px 0;">
-  <img src="https://i.imgur.com/6sECvlq.png" alt="Banner Preview" style="max-width:95%; border-radius:12px; box-shadow:0 10px 30px rgba(0,10,30,0.2);" />
+  <img src="https://i.imgur.com/6sECvlq.png" alt="Banner Preview"
+       style="max-width:95%; border-radius:12px; box-shadow:0 10px 30px rgba(0,10,30,0.2);" />
 </div>
 
 ---
 
-## ✨ Fitur Lengkap
-- **Auto-Clear** — memindai dimensi (default: `overworld`) lalu menghapus entitas yang ditentukan.  
-- **Manual Clear (Burst)** — segera bersihkan via `!clearlagg clear`.  
-- **Configurable Interval** — ubah frekuensi otomatis dengan `!clearlagg interval <detik>`.  
-- **Progress Bar & HUD** — menampilkan countdown & persentase ke semua pemain.  
-- **Warning Broadcast** — peringatan `warningTime` detik sebelum pembersihan.  
-- **Chat History** — menyimpan hingga 50 pesan (per server) untuk debugging / undo.  
-- **Utility Commands** — `!back`, `!rtp`, `!heal`, `!pos`, dsb.  
-- **Diagnostics & Test Mode** — `!test` menampilkan info sistem & potensi error.  
-- **Safe Defaults** — interval minimum 30 detik untuk mencegah spam.  
+## ✨ Full Features
+
+- **Auto Clear System** — scans dimension and removes configured entities.  
+- **Manual Clear Command** — instantly clear via `!clearlagg clear`.  
+- **Interval Customization** — modify auto-clear interval in-game.  
+- **HUD Countdown & Progress Bar**  
+- **Warning Broadcast Before Clear**  
+- **Chat History Logging**  
+- **Utility Commands** (heal, rtp, day/night, pos, fly/unfly, etc.)  
+- **Diagnostics System (`!test`)**  
+- **Safe Defaults (min 30s interval)**  
 
 ---
 
-## 📂 Struktur File (standar)
+## 📁 File Structure
 ```
-/ (repo root) ├─ README.md
-              ├─ LICENSE
-              ├─ ClearLagg_BP/ │
-              ├─ manifest.json │
-              ├─ pack_icon.png │
-              └─ scripts/      │
-              └─ main.js
-              └─ ClearLagg_RP/    (opsional)
-              └─ manifest.json
+/ (repo root) ├─ README.md 
+              ├─ LICENSE 
+              ├─ ClearLagg_BP/ │   
+              │                ├─ manifest.json │   
+              │                ├─ pack_icon.png │   
+              │                └─ scripts/ │       
+              │                            └─ main.js 
+              │
+              └─ ClearLagg_RP/ (optional) │
+                                          └─ manifest.json
 ```
 ---
 
-## 🚀 Instalasi (langkah demi langkah)
-1. Download/clone repo.  
-2. Salin `ClearLagg_BP/` ke `com.mojang/behavior_packs/`.  
-3. (Opsional) Salin `ClearLagg_RP/` ke `com.mojang/resource_packs/`.  
-4. Activate Behavior Pack (dan Resource Pack) di World Settings.  
-5. Masuk/Reload world. Add-on berjalan otomatis jika `enableAutoClear = true`.
+## 🚀 Installation Guide
+
+1. Download the repository.  
+2. Move `ClearLagg_BP/` into:
+
+com.mojang/behavior_packs/
+
+3. *(Optional)* Move `ClearLagg_RP/` into:
+
+com.mojang/resource_packs/
+
+4. Activate the packs in **World Settings**.  
+5. Enter the world — the addon will run automatically.
 
 ---
 
-## 🎮 Perintah Lengkap (Commands)
-> Ketik di chat pemain (bukan command block). Beberapa memerlukan OP.
+## 🎮 Commands List
 
-### Core ClearLagg
-```text
-!clearlagg clear              # Force immediate clear (Burst)
-!clearlagg interval <detik>   # Set auto-clear interval (min 30s)
-!clearlagg status             # Show status: progress, next clear, config
-!clearlagg help               # Show help
+> Type these in Minecraft chat (some require OP permission).
 
-Utility / Extra
-
-!hi      -> bot replies "Hai juga!"
-!list    -> show all commands
-!reload  -> simulate reload
-!test    -> diagnostics mode
-!back    -> teleport to last death location (if active)
-!rtp     -> random teleport
-!ping    -> returns "Pong!"
-!pos     -> show player coordinates
-!heal    -> apply regeneration
-!food    -> apply saturation
-!time    -> show world time
-!day     -> set time to day
-!night   -> set time to night
-!fly     -> enable mayfly (if allowed)
-!unfly   -> disable mayfly
+### **ClearLagg Core**
 ```
-
+!clearlagg clear              # Force immediate clear 
+!clearlagg interval <seconds> # Set auto-clear interval 
+!clearlagg status             # Show addon status 
+!clearlagg help               # Show command help
+```
+### **Utility Commands**
+```
+!hi        # Bot replies "Hello!" 
+!list      # Show all command list 
+!reload    # Simulate reload 
+!test      # Diagnostics 
+!back      # Teleport to last death point 
+!rtp       # Random teleport !ping      # Returns "Pong!" 
+!pos       # Show coordinates 
+!heal      # Restore health 
+!food      # Restore hunger !time      # Show world time 
+!day       # Set time to day 
+!night     # Set time to night !fly       # Enable flight 
+!unfly     # Disable flight
+```
 ---
 
-⚙️ Konfigurasi (Default + contoh)
+## ⚙️ Configuration
 
-Default configuration (di main.js / config object):
-```
+Default config (inside `main.js`):
+
+```json
 {
-  clearInterval: 300,      // seconds (default 5 minutes)
-  warningTime: 30,         // seconds before clear
-  maxItems: 500,           // threshold (opt)
-  enableAutoClear: true,
-  enableProgressBar: true,
-  enableChatHistory: true
+  "clearInterval": 300,
+  "warningTime": 30,
+  "maxItems": 500,
+  "enableAutoClear": true,
+  "enableProgressBar": true,
+  "enableChatHistory": true
 }
 ```
 ```
-Contoh: Ubah interval (OP in game)
+Example (in-game):
 
-!clearlagg interval 600   # set to 10 minutes
+!clearlagg interval 600
 
-Disable auto-clear (dev edit)
+Disable auto clear (edit script):
 
 clearLagg.config.enableAutoClear = false;
 ```
 
 ---
 
-✅ Best Practices & Rekomendasi
+☑️ Best Practices
 
-Jalankan backup dunia sebelum memakai addon pada world produksi.
+Always backup your world before using addons in production.
 
-Untuk server ramai: kurangi clearInterval ke 120–180s atau sesuaikan maxItems.
+For busy servers, set interval to 120–180 seconds.
 
-Aktifkan progress bar agar pemain tahu kapan clear terjadi.
+Enable HUD so players know when the clear is coming.
 
-Gunakan !test di dunia development sebelum deploy ke server publik.
+Use !test before deploying to a public server.
 
 
 
 ---
 
-🐛 Bug Report — Template & Link Discord
+🐛 Bug Reports
 
-Jika menemukan bug / saranan, laporkan/kasih saran apalagi penambahan di addon di Discord kami:
+Report issues through Discord with this template:
 
-
-
-Gunakan template ini saat melapor (copy-paste ke Discord):
-```
 [Bug Report] ClearLagg
-- Minecraft Platform: (Android / Windows 10 / iOS / Console)
-- Minecraft Version: (contoh: 1.20.10)
+- Minecraft Platform: (Android / Windows / iOS / Console)
+- Minecraft Version:
 - ClearLagg Version: 1.0.0
-- Behavior Pack folder name: ClearLagg_BP
-- Steps to reproduce:
-  1. ...
-  2. ...
-- Expected result:
-- Actual result / error logs:
-- Screenshot / video: (attach)
-- main.js (if modified): paste or attach snippet
-```
-> Setelah di-submit kami akan merespon di channel support dan membuat issue tracker bila perlu.
+- Behavior Pack Folder: ClearLagg_BP
+- Steps to Reproduce:
+  1.
+  2.
+- Screenshots / Video:
+- Modified main.js (if any):
 
+
+---
+
+❓ FAQ — Clickable Questions
+
+Navigation
+
+Click a question below:
+
+Is this addon safe for my world?
+
+What entities does ClearLagg remove?
+
+Can I add or remove entity types?
+
+Is there a minimum interval?
+
+Why is the progress bar not showing?
+
+Can I use this in realms/public servers?
+
+Will this addon continue to receive updates?
 
 
 
 ---
 
-❓ FAQ — Pertanyaan & Jawaban Singkat
+Is this addon safe for my world?
 
-Q: Apakah addon ini aman untuk world saya?
-A: Add-on berfungsi pada world standar—tetapi selalu backup world sebelum mengaktifkan addon pada dunia produksi.
+Yes — it is safe for all standard worlds.
+However, always make a backup before enabling any addon.
 
-Q: Apa yang dibersihkan addon?
-A: Item jatuh (minecraft:item), proyektil (arrow, snowball, egg), ender_pearl, splash_potion, experience_bottle, dan entitas lain yang dikonfigurasikan.
-
-Q: Bisakah saya menambah/mengurangi entitas yang dibersihkan?
-A: Ya — edit main.js di bagian array clearedEntities untuk menambah atau mengurangi jenis entity.
-
-Q: Apakah ada batas minimal interval?
-A: Default implementasi set minimal 30 detik untuk mencegah spam dan beban tick.
-
-Q: Bagaimana jika progress bar tidak muncul?
-A: Pastikan pemain tidak mematikan title display di pengaturan game. Progress bar memakai onScreenDisplay.setTitle.
-
-Q: Bisa dipakai di realm/public server?
-A: Ya, tapi beberapa fitur (teleport, heal) mungkin membutuhkan OP/permission di server public.
-
-Q: Apakah akan di update terus?
-A: Ya akan update terus 
 
 ---
 
-🔍 Troubleshooting (Masalah Umum)
+What entities does ClearLagg remove?
 
-Addon tidak muncul di world → periksa manifest.json & versi Minecraft; aktifkan Behavior Pack.
+It removes:
 
-Perintah tidak berfungsi → pastikan mengetik di chat pemain & cek console/server log untuk error.
+Dropped items
 
-Progress bar nge-flicker → kurangi frekuensi update atau cek kompatibilitas onScreenDisplay API di versi MCBE kamu.
+Arrows
 
-RTP teleport muncul di udara → implementasi ground check (raycast) diperlukan untuk aman.
+Snowballs
+
+Eggs
+
+Ender pearls
+
+Splash potions
+
+XP bottles
+
+And additional configurable entities
+
+
+
+---
+
+Can I add or remove entity types?
+
+Yes!
+Edit the clearedEntities array inside main.js.
+
+
+---
+
+Is there a minimum interval?
+
+Yes — 30 seconds to prevent performance issues.
+
+
+---
+
+Why is the progress bar not showing?
+
+Ensure:
+
+Titles are enabled in game settings
+
+Your version of MC supports onScreenDisplay.setTitle
+
+
+
+---
+
+Can I use this in realms/public servers?
+
+Yes.
+However, some commands (heal, rtp, fly) may require OP permission.
+
+
+---
+
+Will this addon continue to receive updates?
+
+Yes — this project is actively maintained.
+
+
+---
+
+🔍 Troubleshooting
+
+Addon not appearing → Check manifest.json and version compatibility
+
+Commands not working → Ensure you're typing in chat, not command blocks
+
+Progress bar flickers → Reduce update rate
+
+RTP teleports in air → Add ground check logic
 
 
 
@@ -224,34 +308,42 @@ RTP teleport muncul di udara → implementasi ground check (raycast) diperlukan 
 
 🛠 Contributing
 
-Kontribusi sangat diapresiasi. Alur:
-
-1. Fork repo → buat branch feature/<nama>
+1. Fork this repo
 
 
-2. Uji perubahan di dev world
+2. Create branch: feature/<name>
 
 
-3. Commit & Push → buat Pull Request
+3. Test changes
 
 
-4. Sertakan deskripsi & screenshot
+4. Open Pull Request
 
 
+5. Provide screenshots or video
 
 
----
-
-📄 License (Ringkasan)
-
-ClearLagg dilisensikan sebagai Free / Unlimited Use License (lihat file LICENSE di repo). Bebas digunakan, dimodifikasi, dan didistribusikan tanpa meminta izin. Gunakan dengan risiko sendiri — penulis tidak bertanggung jawab atas kerusakan.
 
 
 ---
 
-🧾 Changelog singkat
+📄 License
 
-v1.0.0 — Rilis awal: auto clear, manual clear, progress bar, commands dasar.
+Licensed under Free/Unlimited Use License.
+Modify, distribute, or use freely — at your own risk.
+
+
+---
+
+🧾 Changelog
+
+v1.0.0 — Initial release with:
+
+Auto/Manual clear
+
+Progress bar HUD
+
+Utility commands
 
 
 
@@ -259,7 +351,6 @@ v1.0.0 — Rilis awal: auto clear, manual clear, progress bar, commands dasar.
 
 🙏 Credits
 
-Developer: Alif (GitHub: Alifwag)
-
-Terima kasih kepada komunitas MCPE & semua kontributor & tester.
-> Ya itu saya sendiri yang tester dan semua ini by Alif
+Developer: Alif (Alifwag)
+Tester: Also Alif
+Thanks to the MCPE community for support and feedback.
