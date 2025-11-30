@@ -32,13 +32,13 @@ jobs:
         run: |
           echo "
           ╔═══════════════════════════════════════════════╗
-          ║              🧹 CLEARLAG ADDON                        ║
-          ║           Minecraft Bedrock Edition                   ║
-          ║                                                       ║
-          ║    🚀 Auto Build System - GitHub Actions              ║
-          ║    📦 MCADDON Generator + Release Manager             ║
-          ║    🎯 Version: ${{ env.MC_VERSION }}                  ║
-          ║    👨‍💻 Triggered by: ${{ github.actor }}               ║
+          ║              🧹 CLEARLAG ADDON               ║
+          ║           Minecraft Bedrock Edition          ║
+          ║                                               ║
+          ║    🚀 Auto Build System - GitHub Actions     ║
+          ║    📦 MCADDON Generator + Release Manager    ║
+          ║    🎯 Version: ${{ env.MC_VERSION }}         ║
+          ║    👨‍💻 Triggered by: ${{ github.actor }}      ║
           ╚═══════════════════════════════════════════════╝
           "
           echo "📅 Build started at: $(date)"
@@ -65,7 +65,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          # Hapus cache npm karena tidak ada package.json
 
       - name: Validate Repository Structure
         id: validate_structure
@@ -138,8 +138,8 @@ jobs:
         run: |
           echo "
           ╔═══════════════════════════════════════════════╗
-          ║                🏗️ BUILD PHASE                         ║
-          ║            Packaging Minecraft Addon                  ║
+          ║                🏗️ BUILD PHASE                ║
+          ║            Packaging Minecraft Addon         ║
           ╚═══════════════════════════════════════════════╝
           "
 
@@ -368,6 +368,16 @@ jobs:
             exit 1
           fi
 
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: clearlagg-addon-files
+          path: |
+            ClearLagg_Addon_v1.0.${{ github.run_number }}.mcaddon
+            ClearLagg_BehaviorPack_v1.0.${{ github.run_number }}.zip
+            ClearLagg_ResourcePack_v1.0.${{ github.run_number }}.zip
+          retention-days: 7
+
   release:
     name: "🚀 Create Release"
     runs-on: ubuntu-latest
@@ -380,17 +390,24 @@ jobs:
       - name: Download Build Artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: ClearLagg_*
+          name: clearlagg-addon-files
           path: ./artifacts
 
       - name: Display Release Header
         run: |
           echo "
           ╔═══════════════════════════════════════════════╗
-          ║                🚀 RELEASE PHASE                       ║
-          ║         Publishing to GitHub Releases                 ║
+          ║                🚀 RELEASE PHASE              ║
+          ║         Publishing to GitHub Releases        ║
           ╚═══════════════════════════════════════════════╝
           "
+
+      - name: List Downloaded Artifacts
+        run: |
+          echo "📦 Downloaded artifacts:"
+          find ./artifacts -type f -name "*.mcaddon" -o -name "*.zip" | while read file; do
+            echo "✅ $(basename "$file") - $(du -h "$file" | cut -f1)"
+          done
 
       - name: Generate Release Notes
         id: generate_notes
@@ -463,9 +480,9 @@ jobs:
           name: "ClearLagg Addon v1.0.${{ github.run_number }}"
           body_path: release_notes.md
           files: |
-            ClearLagg_Addon_v1.0.${{ github.run_number }}.mcaddon
-            ClearLagg_BehaviorPack_v1.0.${{ github.run_number }}.zip
-            ClearLagg_ResourcePack_v1.0.${{ github.run_number }}.zip
+            artifacts/ClearLagg_Addon_v1.0.${{ github.run_number }}.mcaddon
+            artifacts/ClearLagg_BehaviorPack_v1.0.${{ github.run_number }}.zip
+            artifacts/ClearLagg_ResourcePack_v1.0.${{ github.run_number }}.zip
           draft: false
           prerelease: false
           generate_release_notes: false
@@ -483,32 +500,49 @@ jobs:
           if [ "${{ needs.build.result }}" == "success" ] && [ "${{ needs.release.result }}" == "success" ]; then
             echo "
             ╔═══════════════════════════════════════════════╗
-            ║               🎉 BUILD COMPLETE!                      ║
-            ║          ClearLagg Addon Successfully                 ║
-            ║              Built & Released!                        ║
-            ║                                                       ║
-            ║    📦 Release: v1.0.${{ github.run_number }}          ║
-            ║    🎮 Minecraft: ${{ env.MC_VERSION }}                ║
-            ║    ⏱️ Duration: ${{ job.status }}                     ║
-            ║    👤 By: ${{ github.actor }}                         ║
-            ║                                                       ║
-            ║    🌐 Check the Releases page for download            ║
+            ║               🎉 BUILD COMPLETE!            ║
+            ║          ClearLagg Addon Successfully        ║
+            ║              Built & Released!               ║
+            ║                                               ║
+            ║    📦 Release: v1.0.${{ github.run_number }} ║
+            ║    🎮 Minecraft: ${{ env.MC_VERSION }}       ║
+            ║    👤 By: ${{ github.actor }}                ║
+            ║                                               ║
+            ║    🌐 Check the Releases page for download   ║
             ╚═══════════════════════════════════════════════╝
             "
+          elif [ "${{ needs.build.result }}" == "failure" ]; then
+            echo "
+            ╔═══════════════════════════════════════════════╗
+            ║               💥 BUILD FAILED!              ║
+            ║           Check the build logs               ║
+            ╚═══════════════════════════════════════════════╝
+            "
+            exit 1
+          elif [ "${{ needs.release.result }}" == "failure" ]; then
+            echo "
+            ╔═══════════════════════════════════════════════╗
+            ║              ⚠️ RELEASE FAILED!             ║
+            ║        Build succeeded but release failed    ║
+            ╚═══════════════════════════════════════════════╝
+            "
+            exit 1
           else
             echo "
             ╔═══════════════════════════════════════════════╗
-            ║               💥 BUILD FAILED!                        ║
-            ║           Check the logs for errors                   ║
+            ║                 ❓ UNKNOWN STATUS            ║
+            ║          Check workflow for details          ║
             ╚═══════════════════════════════════════════════╝
             "
             exit 1
           fi
 
-      - name: Upload Build Logs
+      - name: Upload Build Logs on Failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: build-logs
-          path: ${{ github.workspace }}
-          retention-days: 7
+          name: build-failure-logs
+          path: |
+            scripts/
+            ClearLagg-Addon/
+          retention-days: 3
