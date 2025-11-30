@@ -63,9 +63,9 @@
 ---
 
 ## 📂 Struktur File (standar)
-
+```
 / (repo root) ├─ README.md ├─ LICENSE ├─ ClearLagg_BP/ │  ├─ manifest.json │  ├─ pack_icon.png │  └─ scripts/ │     └─ main.js └─ ClearLagg_RP/    (opsional) └─ manifest.json
-
+```
 ---
 
 ## 🚀 Instalasi (langkah demi langkah)
