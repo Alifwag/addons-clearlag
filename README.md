@@ -203,6 +203,8 @@ A: Pastikan pemain tidak mematikan title display di pengaturan game. Progress ba
 Q: Bisa dipakai di realm/public server?
 A: Ya, tapi beberapa fitur (teleport, heal) mungkin membutuhkan OP/permission di server public.
 
+Q: Apakah akan di update terus?
+A: Ya akan update terus 
 
 ---
 
