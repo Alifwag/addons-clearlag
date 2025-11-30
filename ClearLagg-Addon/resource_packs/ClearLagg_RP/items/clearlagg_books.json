@@ -1,0 +1,27 @@
+{
+  "format_version": "1.16.0",
+  "minecraft:item": {
+    "description": {
+      "identifier": "clearlagg:guide_book",
+      "category": "Misc",
+      "is_experimental": false,
+      "register_to_creative_menu": false
+    },
+    "components": {
+      "minecraft:icon": "textures/items/book_written",
+      "minecraft:stack_size": 1,
+      "minecraft:display_name": {
+        "value": "§bClearLagg — Panduan Perintah"
+      },
+      "clearlagg:book_pages": {
+        "title": "ClearLagg — Panduan",
+        "author": "ClearLagg Addon",
+        "pages": [
+          "Halaman 1/3\\n!clearlagg clear - Memaksa clear sekarang\\n!clearlagg interval <detik> - Atur interval auto clear",
+          "Halaman 2/3\\n!back - Kembali ke lokasi kematian\\n!sethome / !home - Home pribadi\\n!rtp - Random teleport",
+          "Halaman 3/3\\n!tpa / !tpaccept / !tpdeny - Teleport request\\n!clearnear <r> - Clear di radius"
+        ]
+      }
+    }
+  }
+}

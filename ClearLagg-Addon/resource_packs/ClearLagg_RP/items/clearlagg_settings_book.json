@@ -1,0 +1,29 @@
+{
+  "format_version": "1.16.0",
+  "minecraft:item": {
+    "description": {
+      "identifier": "clearlagg:settings_book",
+      "category": "Misc",
+      "is_experimental": false,
+      "register_to_creative_menu": false
+    },
+    "components": {
+      "minecraft:icon": "textures/items/book_written",
+      "minecraft:stack_size": 1,
+      "minecraft:display_name": {
+        "value": "§eBuku Pengaturan ClearLagg"
+      },
+      "minecraft:keep_on_death": true,
+      "minecraft:can_destroy_in_creative": false,
+      "clearlagg:book_pages": {
+        "title": "Pengaturan ClearLagg",
+        "author": "ClearLagg Admin",
+        "pages": [
+          "Pengaturan utama:\\n- clearInterval: detik antara auto-clear\\n- warningTime: detik peringatan",
+          "Contoh: set interval via command: !clearlagg interval 60\\nAtau gunakan book ini (manual/GUI tidak tersedia)\\nNOTE: Buku ini tidak boleh dibuang by design.",
+          "Advanced: Anda juga bisa membuat custom script untuk memanggil fungsi ClearLagg via scripting API."
+        ]
+      }
+    }
+  }
+}

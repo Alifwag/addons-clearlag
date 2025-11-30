@@ -1,0 +1,28 @@
+{
+  "format_version": "1.16.0",
+  "minecraft:item": {
+    "description": {
+      "identifier": "clearlagg:admin_book",
+      "category": "Misc",
+      "is_experimental": false,
+      "register_to_creative_menu": false
+    },
+    "components": {
+      "minecraft:icon": "textures/items/book_written",
+      "minecraft:stack_size": 1,
+      "minecraft:display_name": {
+        "value": "§cBuku Admin ClearLagg (OP)"
+      },
+      "minecraft:keep_on_death": true,
+      "clearlagg:book_pages": {
+        "title": "Admin — Kontrol World",
+        "author": "ClearLagg Admin",
+        "pages": [
+          "Perintah OP di buku:\\n- set time day/night\\n- clear inventory player\\n- ban/kick (dgn durasi)\\n- spawn, teleport, dsb",
+          "Contoh manual: Gunakan command berikut (via chat):\\n!ban <player> <detik>\\n!kick <player>\\n!invclear <player>",
+          "CATATAN: Buku Admin diberikan hanya ke OP/Host. Untuk set OP via tag: beri tag clearlagg_op"
+        ]
+      }
+    }
+  }
+}
