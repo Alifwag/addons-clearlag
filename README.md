@@ -252,6 +252,45 @@ Atau gunakan buku interaktif yang auto diberikan saat join!
 
 ---
 
+# Struktur Proyek ClearLagg Add-on
+
+```
+ClearLagg-Addon/
+│
+├── Behavior Pack (BP)/
+│   ├── manifest.json
+│   ├── pack_icon.png
+│   ├── scripts/
+│   │   └── main.js
+│   ├── texts/
+│   │   ├── en_US.lang
+│   │   ├── id_ID.lang
+│   │   └── languages.json
+│   └── items/
+│       ├── settings_book.json
+│       ├── info_book.json
+│       ├── op_book.json
+│       └── music_book.json
+│
+├── Resource Pack (RP)/
+│   ├── manifest.json
+│   ├── pack_icon.png
+│   ├── scripts/
+│   │   └── main.js
+│   ├── texts/
+│   │   ├── en_US.lang
+│   │   ├── id_ID.lang
+│   │   └── languages.json
+│   └── textures/
+│       └── items/
+│           ├── settings_book.png
+│           ├── info_book.png
+│           ├── op_book.png
+│           └── music_cassette.png
+│
+└── README.md
+```
+
 ## ⚙️ Konfigurasi
 
 ### Default Settings
