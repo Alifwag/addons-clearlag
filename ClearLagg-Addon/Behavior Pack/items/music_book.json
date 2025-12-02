@@ -1,1 +1,34 @@
-
+{
+  "format_version": "1.20.50",
+  "minecraft:item": {
+    "description": {
+      "identifier": "clearlagg:music_book",
+      "menu_category": {
+        "category": "items"
+      }
+    },
+    "components": {
+      "minecraft:icon": {
+        "texture": "music_book"
+      },
+      "minecraft:display_name": {
+        "value": "item.clearlagg:music_book"
+      },
+      "minecraft:max_stack_size": 1,
+      "minecraft:hand_equipped": true,
+      "minecraft:use_animation": "book",
+      "minecraft:use_duration": 32,
+      "minecraft:tags": {
+        "tags": [
+          "clearlagg:book",
+          "clearlagg:music",
+          "clearlagg:keep_on_death"
+        ]
+      },
+      "minecraft:item_properties": {
+        "minecraft:can_destroy_in_creative": false,
+        "minecraft:should_despawn": false
+      }
+    }
+  }
+}
