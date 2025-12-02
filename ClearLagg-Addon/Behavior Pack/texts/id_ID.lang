@@ -1,0 +1,114 @@
+## ClearLagg Advanced - Bahasa Indonesia
+
+## Item Names
+item.clearlagg:settings_book=Buku Pengaturan ClearLagg
+item.clearlagg:info_book=Buku Panduan ClearLagg
+item.clearlagg:op_book=Buku Panel OP
+item.clearlagg:music_book=Buku Sistem Musik
+
+## Messages
+clearlagg.prefix=[ClearLagg]
+clearlagg.enabled=§aSistem ClearLagg diaktifkan!
+clearlagg.disabled=§cSistem ClearLagg dinonaktifkan!
+
+clearlagg.warning=§ePeringatan! Pembersihan item dalam %s detik!
+clearlagg.clearing=§aMembersihkan items...
+clearlagg.complete=§a✔ Pembersihan selesai!
+
+clearlagg.report.title=§6═══ §eLaporan Pembersihan §6═══
+clearlagg.report.items=§fItems: §a%s
+clearlagg.report.ore=§fOre: §a%s
+clearlagg.report.arrows=§fArrows: §a%s
+clearlagg.report.total=§fTotal: §a%s
+
+clearlagg.performance.title=§6═══ §ePerforma Server §6═══
+clearlagg.performance.entities=§fEntities: §b%s
+clearlagg.performance.players=§fPlayers: §b%s
+clearlagg.performance.tps=§fTPS: §b%s
+clearlagg.performance.memory=§fMemory: §b%sMB
+
+## Commands
+command.help=Menampilkan daftar semua perintah
+command.hai=Sapaan dari addon
+command.back=Kembali ke lokasi kematian terakhir
+command.clearlag=Paksa pembersihan items sekarang
+command.stats=Tampilkan statistik server
+command.undo=Batalkan chat terakhir
+command.redo=Kembalikan chat yang di-undo
+command.tps=Cek TPS server
+command.ping=Cek ping Anda
+command.info=Informasi addon
+command.book=Dapatkan buku panduan
+command.music=Buka menu musik
+command.settings=Buka pengaturan
+command.day=Ubah waktu ke siang
+command.night=Ubah waktu ke malam
+
+## UI
+ui.title.help=§6═══ §eDaftar Perintah §6═══
+ui.title.settings=§e⚙️ Pengaturan ClearLagg
+ui.title.music=§b🎵 Sistem Musik
+ui.title.op=§c👑 Panel OP
+
+ui.button.all_commands=§a📋 Semua Perintah
+ui.button.settings=§e⚙️ Pengaturan
+ui.button.music=§b🎵 Musik
+ui.button.op_commands=§c👑 OP Commands
+
+ui.settings.delay=§bDelay Pembersihan (detik)
+ui.settings.warning=§bWaktu Peringatan (detik)
+ui.settings.language=§bBahasa
+ui.settings.auto_clean=§bAuto Clean Aktif
+ui.settings.clean_items=§bBersihkan Items
+ui.settings.clean_arrows=§bBersihkan Arrows
+ui.settings.clean_mobs=§bBersihkan Mobs
+ui.settings.clean_xp=§bBersihkan XP Orbs
+
+ui.music.add=§a➕ Tambah Musik Spotify
+ui.music.library=§e📚 Koleksi Musik Saya
+ui.music.delete=§c🗑️ Hapus Musik
+
+ui.op.time=§e☀️ Atur Waktu
+ui.op.weather=§b🌦️ Atur Cuaca
+ui.op.players=§a👤 Kelola Player
+ui.op.inventory=§d📦 Inventory Player
+ui.op.kick=§c⚠️ Kick Player
+ui.op.ban=§4🔨 Ban Player
+
+## Messages
+message.no_permission=§cAnda tidak memiliki izin untuk ini!
+message.player_not_found=§cPlayer tidak ditemukan!
+message.command_not_found=§cCommand tidak ditemukan!
+message.saved=§a✔ Disimpan!
+message.error=§cTerjadi kesalahan!
+
+message.book_received=§aBuku %s telah diberikan!
+message.music_added=§a✔ Musik ditambahkan: §f%s - %s
+message.music_empty=§cKoleksi musik masih kosong!
+message.music_deleted=§a✔ Musik dihapus: §f%s
+
+message.death_back=§aKetik §b!back§a untuk kembali ke lokasi kematian
+message.no_death_location=§cTidak ada lokasi kematian yang tersimpan.
+message.teleported=§a✔ Teleported!
+
+message.welcome=§aSelamat datang! Ketik !help untuk bantuan.
+message.goodbye=§eSampai jumpa lagi!
+
+## Book Content
+book.info.title=ClearLagg - Panduan Lengkap
+book.settings.title=ClearLagg - Pengaturan
+book.op.title=ClearLagg - Panel OP
+book.music.title=ClearLagg - Sistem Musik
+
+## Credits
+credits.developer=Developer
+credits.github=GitHub
+credits.license=License
+credits.version=Version
+
+## Misc
+misc.loading=§eMemuat...
+misc.processing=§eMemproses...
+misc.please_wait=§eMohon tunggu...
+misc.done=§aSelesai!
+misc.cancelled=§cDibatalkan!
