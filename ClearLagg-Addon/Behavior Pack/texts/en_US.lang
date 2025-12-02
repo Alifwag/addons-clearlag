@@ -1,0 +1,114 @@
+## ClearLagg Advanced - English
+
+## Item Names
+item.clearlagg:settings_book=ClearLagg Settings Book
+item.clearlagg:info_book=ClearLagg Info Book
+item.clearlagg:op_book=OP Control Panel Book
+item.clearlagg:music_book=Music System Book
+
+## Messages
+clearlagg.prefix=[ClearLagg]
+clearlagg.enabled=§aClearLagg system enabled!
+clearlagg.disabled=§cClearLagg system disabled!
+
+clearlagg.warning=§eWarning! Item cleanup in %s seconds!
+clearlagg.clearing=§aCleaning items...
+clearlagg.complete=§a✔ Cleanup complete!
+
+clearlagg.report.title=§6═══ §eCleanup Report §6═══
+clearlagg.report.items=§fItems: §a%s
+clearlagg.report.ore=§fOre: §a%s
+clearlagg.report.arrows=§fArrows: §a%s
+clearlagg.report.total=§fTotal: §a%s
+
+clearlagg.performance.title=§6═══ §eServer Performance §6═══
+clearlagg.performance.entities=§fEntities: §b%s
+clearlagg.performance.players=§fPlayers: §b%s
+clearlagg.performance.tps=§fTPS: §b%s
+clearlagg.performance.memory=§fMemory: §b%sMB
+
+## Commands
+command.help=Show list of all commands
+command.hai=Greetings from addon
+command.back=Return to last death location
+command.clearlag=Force item cleanup now
+command.stats=Display server statistics
+command.undo=Undo last chat message
+command.redo=Redo undone chat message
+command.tps=Check server TPS
+command.ping=Check your ping
+command.info=Addon information
+command.book=Get guide book
+command.music=Open music menu
+command.settings=Open settings
+command.day=Change time to day
+command.night=Change time to night
+
+## UI
+ui.title.help=§6═══ §eCommand List §6═══
+ui.title.settings=§e⚙️ ClearLagg Settings
+ui.title.music=§b🎵 Music System
+ui.title.op=§c👑 OP Control Panel
+
+ui.button.all_commands=§a📋 All Commands
+ui.button.settings=§e⚙️ Settings
+ui.button.music=§b🎵 Music
+ui.button.op_commands=§c👑 OP Commands
+
+ui.settings.delay=§bCleanup Delay (seconds)
+ui.settings.warning=§bWarning Time (seconds)
+ui.settings.language=§bLanguage
+ui.settings.auto_clean=§bAuto Clean Active
+ui.settings.clean_items=§bClean Items
+ui.settings.clean_arrows=§bClean Arrows
+ui.settings.clean_mobs=§bClean Mobs
+ui.settings.clean_xp=§bClean XP Orbs
+
+ui.music.add=§a➕ Add Spotify Music
+ui.music.library=§e📚 My Music Library
+ui.music.delete=§c🗑️ Delete Music
+
+ui.op.time=§e☀️ Set Time
+ui.op.weather=§b🌦️ Set Weather
+ui.op.players=§a👤 Manage Players
+ui.op.inventory=§d📦 Player Inventory
+ui.op.kick=§c⚠️ Kick Player
+ui.op.ban=§4🔨 Ban Player
+
+## Messages
+message.no_permission=§cYou don't have permission for this!
+message.player_not_found=§cPlayer not found!
+message.command_not_found=§cCommand not found!
+message.saved=§a✔ Saved!
+message.error=§cAn error occurred!
+
+message.book_received=§a%s book has been given!
+message.music_added=§a✔ Music added: §f%s - %s
+message.music_empty=§cMusic library is empty!
+message.music_deleted=§a✔ Music deleted: §f%s
+
+message.death_back=§aType §b!back§a to return to death location
+message.no_death_location=§cNo death location saved.
+message.teleported=§a✔ Teleported!
+
+message.welcome=§aWelcome! Type !help for assistance.
+message.goodbye=§eSee you again!
+
+## Book Content
+book.info.title=ClearLagg - Complete Guide
+book.settings.title=ClearLagg - Settings
+book.op.title=ClearLagg - OP Panel
+book.music.title=ClearLagg - Music System
+
+## Credits
+credits.developer=Developer
+credits.github=GitHub
+credits.license=License
+credits.version=Version
+
+## Misc
+misc.loading=§eLoading...
+misc.processing=§eProcessing...
+misc.please_wait=§ePlease wait...
+misc.done=§aDone!
+misc.cancelled=§cCancelled!
