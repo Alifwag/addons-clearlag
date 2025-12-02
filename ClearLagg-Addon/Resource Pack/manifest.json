@@ -1,1 +1,35 @@
-
+{
+  "format_version": 2,
+  "header": {
+    "name": "ClearLagg Advanced [Resources]",
+    "description": "§eResource Pack untuk ClearLagg Advanced. §7Developer: Alifwag",
+    "uuid": "d4e5f6a7-b8c9-0123-def1-234567890123",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 16, 0]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "e5f6a7b8-c9d0-1234-ef12-345678901234",
+      "version": [1, 0, 0]
+    },
+    {
+      "type": "script",
+      "uuid": "f6a7b8c9-d0e1-2345-f123-456789012345",
+      "version": [1, 0, 0],
+      "entry": "scripts/main.js",
+      "language": "javascript"
+    }
+  ],
+  "dependencies": [
+    {
+      "module_name": "@minecraft/server-ui",
+      "version": "1.4.0-beta"
+    }
+  ],
+  "metadata": {
+    "authors": ["Alifwag"],
+    "license": "MIT",
+    "url": "https://github.com/Alifwag/addons-clearlagg"
+  }
+}
